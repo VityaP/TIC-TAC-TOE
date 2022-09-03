@@ -672,27 +672,9 @@ int main(int        argc,
                     std::cout << "Opponent turn\n";
                 }
                 else {
-
-                    mes.action = CHECK_IF_OPPONENT_MAKE_MOVE;
-                    mes.movement = -2;
-                    
-                    
-                    SendAndRecieve(&mes,
-                                    &s_move,
-                                    &s_status,
-                                    &s_receiver_player,
-                                    &s_win,
-                                    &s_lose,
-                                    &s_win_stat,
-                                    &s_lose_stat,
-                                    &TYPE,
-                                    s_text);
-
-
+                    s_move = -2;
                     while( s_move == -2){
                         mes.action = CHECK_IF_OPPONENT_MAKE_MOVE;
-                        
-                        
                         SendAndRecieve(&mes,
                                         &s_move,
                                         &s_status,
@@ -746,17 +728,19 @@ int main(int        argc,
         int index = -1;
         std::cout << "Opponent turn\n";
 
-        mes.action = CHECK_IF_OPPONENT_MAKE_MOVE;
-        mes.movement = -2;
-        s_move = -7;
-
-        SendAndRecieve(&mes,&s_move,&s_status,&s_receiver_player,&s_win,&s_lose,&s_win_stat,&s_lose_stat,&TYPE,s_text);
-
+        s_move = -2;
         while( s_move == -2){
             mes.action = CHECK_IF_OPPONENT_MAKE_MOVE;
-            
-            
-            SendAndRecieve(&mes,&s_move,&s_status,&s_receiver_player,&s_win,&s_lose,&s_win_stat,&s_lose_stat,&TYPE,s_text);
+            SendAndRecieve(&mes,
+                           &s_move,
+                           &s_status,
+                           &s_receiver_player,
+                           &s_win,
+                           &s_lose,
+                           &s_win_stat,
+                           &s_lose_stat,
+                           &TYPE,
+                           s_text);
         }
 
         CheckGameCondition(s_win, s_lose);
@@ -799,17 +783,10 @@ int main(int        argc,
                 CheckGameCondition(s_win, s_lose);
 
                 if (turn == 1) {
-                    mes.action = CHECK_IF_OPPONENT_MAKE_MOVE;
-                    mes.movement = -2;
-                    s_move = -7;
 
-                    
-                    SendAndRecieve(&mes,&s_move,&s_status,&s_receiver_player,&s_win,&s_lose,&s_win_stat,&s_lose_stat,&TYPE,s_text);
-
+                    s_move = -2;
                     while( s_move == -2){
                         mes.action = CHECK_IF_OPPONENT_MAKE_MOVE;
-                        
-                        
                         SendAndRecieve(&mes,
                                         &s_move,
                                         &s_status,
