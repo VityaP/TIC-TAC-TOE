@@ -431,7 +431,6 @@ int main(int        argc,
         PrintMessageAndExitGame("Sorry, this ID is in use now, choose another one");
     }
 
-    std::string  string_player;
     if (TYPE == 1){
         if( decision == 1){
             ChooseAndVerifyOpponetsID(&mes,
@@ -509,12 +508,6 @@ int main(int        argc,
 
         mes.action = UPDATE_MOVE_ON_OPPONENTS_SIDE;
         mes.movement = index;
-        if ( decision == 1 ) {
-            mes.receiverPlayer = std::stoi(string_player);
-        }
-        else{
-            mes.receiverPlayer = s_receiver_player;
-        }
         
         SendAndRecieve(&mes,
                        &s_move,
@@ -666,12 +659,7 @@ int main(int        argc,
                     PrintGame(game_data);
                     mes.action = UPDATE_MOVE_ON_OPPONENTS_SIDE;
                     mes.movement = index;
-                    if ( decision == 1 ) {
-                        mes.receiverPlayer = std::stoi(string_player);
-                    }
-                    else{
-                        mes.receiverPlayer = s_receiver_player;
-                    }
+
 
                     
                     
@@ -1054,12 +1042,6 @@ int main(int        argc,
                     PrintGame(game_data);
                     mes.action = UPDATE_MOVE_ON_OPPONENTS_SIDE;
                     mes.movement = index;
-                    if ( decision == 1 ) {
-                        mes.receiverPlayer = std::stoi(string_player);
-                    }
-                    else{
-                        mes.receiverPlayer = s_receiver_player;
-                    }
 
                     
                     
