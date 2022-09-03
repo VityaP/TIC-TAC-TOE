@@ -30,5 +30,7 @@ typedef struct _msg{
 #define SHOW_DATABASE_ON_SERVERSIDE     8
 #define PLAYER_WIN_GAME                 9
 
+#define PROGRAM_RUN 0
+#define PROGRAM_STOP 3
 
 #endif

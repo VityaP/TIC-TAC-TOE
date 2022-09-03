@@ -31,14 +31,14 @@ std::string str_tolower(std::string s) {
     return s;
 }
 
-volatile sig_atomic_t flag = 0;
+volatile sig_atomic_t PROGRAM_ABORT_HANDLER = PROGRAM_RUN;
 
 
 void GracefulQuit(int tmp){
 	std::cout << "You lost by resignation\n";
 	std::cout << "Quitting the game\n";
 
-	flag = 3;
+	PROGRAM_ABORT_HANDLER = PROGRAM_STOP;
 }
 
 void PrintMessageAndExitGame(const std::string& mes){
@@ -148,6 +148,165 @@ void* GetSocket(int         argc,
     return request;
 }
 
+void NotifyAboutStart(int opponent_id){
+    std::cout << "----------------------------------------------------------\n";
+    std::cout << "Player is found\n";
+    std::cout << "You are playing against " << opponent_id << " player\n";
+    std::cout << "3\n";
+    sleep(1);
+    std::cout << "2\n";
+    sleep(1);
+    std::cout << "1\n";
+    sleep(1);
+    std::cout << "Game Starts\n";
+}
+
+int VerifyAndGetIndex_81(message*    mes, 
+                         int*        s_move, 
+                         int*        s_status, 
+                         int*        s_receiver_player, 
+                         int*        s_win, 
+                         int*        s_lose, 
+                         int*        s_win_stat, 
+                         int*        s_lose_stat, 
+                         int*        TYPE, 
+                         char*       s_text){
+
+    int index = -1;
+    std::string input;
+
+    bool ok = false;
+    bool first_time = true;
+
+    while( ok != true){
+        if (first_time == false){
+            std::cout << "Inccorect index. Please type again\n";
+        }
+        first_time = false;
+        std::cout << "Enter index [1 ... 81] \n";
+        std::cin >> input;
+
+        if( str_tolower(input) == "exit" ){
+            *s_lose = 0;
+            while( *s_lose != 1){
+                mes->action = EXIT_GAME_EARLY;
+                SendAndRecieve(mes,
+                               s_move,
+                               s_status,
+                               s_receiver_player,
+                               s_win,
+                               s_lose,
+                               s_win_stat,
+                               s_lose_stat,
+                               TYPE,
+                               s_text);
+            }
+            PrintMessageAndExitGame("You lost by resignation");
+        }
+
+        index = std::stoi(input);
+        if ( (index > 0) && (index < 82) ){
+            ok = true;
+        }
+    }
+    return index;
+}
+
+int VerifyAndGetIndex_9(message*    mes, 
+                        int*        s_move, 
+                        int*        s_status, 
+                        int*        s_receiver_player, 
+                        int*        s_win, 
+                        int*        s_lose, 
+                        int*        s_win_stat, 
+                        int*        s_lose_stat, 
+                        int*        TYPE, 
+                        char*       s_text){
+
+    int index = -1;
+    std::string input;
+    bool ok = false;
+    bool first_time = true;
+    while( ok != true){
+        if( first_time == false){
+            std::cout << "Inccorect index. Please type again\n";
+            std::cout << "Enter index [1 ... 9] \n";
+        }
+        first_time = false;
+        std::cin >> input;
+
+        if( str_tolower(input) == "exit" ){
+            *s_lose = 0;
+            while( *s_lose != 1){
+                mes->action = EXIT_GAME_EARLY;
+                SendAndRecieve(mes,
+                               s_move,
+                               s_status,
+                               s_receiver_player,
+                               s_win,
+                               s_lose,
+                               s_win_stat,
+                               s_lose_stat,
+                               TYPE,
+                               s_text);
+            }
+            PrintMessageAndExitGame("You lost by resignation");
+        }
+        index = std::stoi(input);
+        if ( (index > 0) && (index < 10) ){
+            ok = true;
+        }
+    }
+    return index;
+}
+
+void ChooseAndVerifyOpponetsID(message*    mes, 
+                               int*        s_move, 
+                               int*        s_status, 
+                               int*        s_receiver_player, 
+                               int*        s_win, 
+                               int*        s_lose, 
+                               int*        s_win_stat, 
+                               int*        s_lose_stat, 
+                               int*        TYPE, 
+                               char*       s_text){
+
+    bool first_time = true;
+    bool correct_input = false;
+    std::string string_player;
+
+    while( correct_input != true){
+        if( first_time == false ){
+            std::cout << "Inccorect ID. Please type again\n";
+        }
+        first_time = false;
+        std::cout << "Enter ID of another player from [0 ; " << SizeArray << "]: ";
+        std::cin >> string_player;
+        if( str_tolower(string_player) == "exit" ){
+            *s_lose = 0;
+            while( *s_lose != 1){
+                mes->action = EXIT_GAME_EARLY;
+                SendAndRecieve(mes,
+                               s_move,
+                               s_status,
+                               s_receiver_player,
+                               s_win,
+                               s_lose,
+                               s_win_stat,
+                               s_lose_stat,
+                               TYPE,
+                               s_text);
+            }
+            PrintMessageAndExitGame("You lost by resignation");
+        }
+
+        mes->receiverPlayer = std::stoi(string_player);
+        if ( (mes->receiverPlayer > 0) && (mes->receiverPlayer < SizeArray) ){
+            correct_input = true;
+        }
+    }
+}
+
 int main(int        argc, 
          char*      argv[]){
 
@@ -168,8 +327,6 @@ int main(int        argc,
     message mes;
     mes.id                      = std::stoi(argv[1]);
     mes.socket                  = request;
-
-    bool    correct_input;
     
     switch (decision){
         case 1:
@@ -279,100 +436,53 @@ int main(int        argc,
     if (s_status == 2){
         PrintMessageAndExitGame("Sorry, this ID is in use now, choose another one");
     }
-    bool first_time;
+
     std::string  string_player;
     if (TYPE == 1){
-        switch (decision){
-            //case To play with guy you want
-            case 1:
-                first_time = true;
-                correct_input = false;
+        if( decision == 1){
+            ChooseAndVerifyOpponetsID(&mes,
+                                      &s_move,
+                                      &s_status,
+                                      &s_receiver_player,
+                                      &s_win,
+                                      &s_lose,
+                                      &s_win_stat,
+                                      &s_lose_stat,
+                                      &TYPE,
+                                      s_text);
 
-                while( correct_input != true){
-                    if( first_time == false ){
-                        std::cout << "Inccorect ID. Please type again\n";
-                    }
-                    first_time = false;
-                    std::cout << "Enter ID of another player from [0 ; " << SizeArray << "]: ";
-                    std::cin >> string_player;
-                    if( str_tolower(string_player) == "exit" ){
-                        s_lose = 0;
-                        while( s_lose != 1){
-                            mes.action = EXIT_GAME_EARLY;
-                            SendAndRecieve(&mes,
-                                           &s_move,
-                                           &s_status,
-                                           &s_receiver_player,
-                                           &s_win,
-                                           &s_lose,
-                                           &s_win_stat,
-                                           &s_lose_stat,
-                                           &TYPE,
-                                           s_text);
-                        }
-                        PrintMessageAndExitGame("You lost by resignation");
-                    }
-
-                    mes.receiverPlayer = std::stoi(string_player);
-                    if ( mes.receiverPlayer > 0 && mes.receiverPlayer < SizeArray ){
-                        correct_input = true;
-                    }
-                }
-
-                //need to check it?
-                mes.status = 2;
-            break;
-
-            //case To connect random guy who is ready
-            case 2:
-                std::cout << "Searching a player...\n";
-                s_status = 0;
-                while( s_status != 2){
-                    mes.action = FIND_OPPONENT;
-                    mes.receiverPlayer = -2;
-                    
-                    mes.playertype = TYPE;
-                    SendAndRecieve(&mes,
-                                   &s_move,
-                                   &s_status,
-                                   &s_receiver_player,
-                                   &s_win,
-                                   &s_lose,
-                                   &s_win_stat,
-                                   &s_lose_stat,
-                                   &TYPE,
-                                   s_text);
-                }
-                mes.receiverPlayer = s_receiver_player;
-            break;
+            //need to check it?
+            mes.status = 2;
         }
-
-        if ( decision == 1 ) {
-            mes.receiverPlayer = std::stoi(string_player);
-        }
-        else{
+        if( decision == 2){
+            std::cout << "Searching a player...\n";
+            s_status = 0;
+            while( s_status != 2){
+                mes.action = FIND_OPPONENT;
+                mes.receiverPlayer = -2;
+                
+                mes.playertype = TYPE;
+                SendAndRecieve(&mes,
+                                &s_move,
+                                &s_status,
+                                &s_receiver_player,
+                                &s_win,
+                                &s_lose,
+                                &s_win_stat,
+                                &s_lose_stat,
+                                &TYPE,
+                                s_text);
+            }
             mes.receiverPlayer = s_receiver_player;
         }
 
-        puts("----------------------------------------------------------\n");
+        NotifyAboutStart(mes.receiverPlayer);
 
-        std::cout << "Player is found\n";
-        std::cout << "You are playing against " << mes.receiverPlayer << " player\n";
-        std::cout << "3\n";
-        sleep(1);
-        std::cout << "2\n";
-        sleep(1);
-        std::cout << "1\n";
-        sleep(1);
-        std::cout << "Game Starts\n";
-
-        
         int position;
         int* info_data = (int* ) malloc( ( SizeV + 1 ) * sizeof(int));
         char* game_data = (char* ) malloc( ( SizeV + 1 ) * sizeof(char));
         char* global_win = (char* ) malloc( ( 10 ) * sizeof(char));
         int* taken_array = (int* ) malloc( ( 10 ) * sizeof(int));
-
 
         for(size_t i = 0; i <= SizeV; ++i){
             info_data[i] = i;
@@ -387,46 +497,21 @@ int main(int        argc,
         PrintInfo(info_data);
         PrintGame(game_data);
 
-        int index = -1;
-        std::string input;
         int turn = 1;
 
-        bool ok = false;
-        bool first_time = true;
-        while( ok != true){
-            if (first_time == false){
-                std::cout << "Inccorect index. Please type again\n";
-            }
-            first_time = false;
-            std::cout << "Enter index [1 ... 81] \n";
-            std::cin >> input;
-
-            if( str_tolower(input) == "exit" ){
-                s_lose = 0;
-                while( s_lose != 1){
-                    mes.action = EXIT_GAME_EARLY;
-                    SendAndRecieve(&mes,
-                                   &s_move,
-                                   &s_status,
-                                   &s_receiver_player,
-                                   &s_win,
-                                   &s_lose,
-                                   &s_win_stat,
-                                   &s_lose_stat,
-                                   &TYPE,
-                                   s_text);
-                }
-                PrintMessageAndExitGame("You lost by resignation");
-            }
-
-            index = std::stoi(input);
-            if ( (index > 0) && (index < 82) ){
-                ok = true;
-            }
-        }
+        int index = VerifyAndGetIndex_81(&mes,
+                                         &s_move,
+                                         &s_status,
+                                         &s_receiver_player,
+                                         &s_win,
+                                         &s_lose,
+                                         &s_win_stat,
+                                         &s_lose_stat,
+                                         &TYPE,
+                                         s_text);
 
         game_data[index] = 'x';
-        ++taken_array[PositionforCell(game_data,index)];
+        ++taken_array[PositionforCell(game_data, index)];
 
         mes.action = UPDATE_MOVE_ON_OPPONENTS_SIDE;
         mes.movement = index;
@@ -465,7 +550,7 @@ int main(int        argc,
         signal(SIGTSTP, GracefulQuit);//ctr + Z
         signal(SIGINT, GracefulQuit);//ctr + c
 
-        if ( flag == 3){
+        if ( PROGRAM_ABORT_HANDLER == PROGRAM_STOP){
 
             s_lose = 0;
             while( s_lose != 1){
@@ -485,11 +570,127 @@ int main(int        argc,
             PrintMessageAndExitGame("You lost by resignation");
         }
 
-        while(flag!=3){
+        while(PROGRAM_ABORT_HANDLER != PROGRAM_STOP){
 
-            if(!flag){
+            while ( index != 100 ){
 
-                while ( index != 100 ){
+                if (s_win == 1){
+                    PrintMessageAndExitGame("You won by resignation");
+                }
+                if (s_lose == 1){
+                    PrintMessageAndExitGame("You lost");
+                }
+
+                if (turn == 1) {
+
+                    index = VerifyAndGetIndex_9(&mes,
+                                                &s_move,
+                                                &s_status,
+                                                &s_receiver_player,
+                                                &s_win,
+                                                &s_lose,
+                                                &s_win_stat,
+                                                &s_lose_stat,
+                                                &TYPE,
+                                                s_text);
+
+                    int x = -1;
+                    int escape = 1;
+                    while ( (x = Add(game_data, position, index, 'x', taken_array, escape) ) ){
+
+                        if ( x == 1){
+                            index = VerifyAndGetIndex_9(&mes,
+                                                        &s_move,
+                                                        &s_status,
+                                                        &s_receiver_player,
+                                                        &s_win,
+                                                        &s_lose,
+                                                        &s_win_stat,
+                                                        &s_lose_stat,
+                                                        &TYPE,
+                                                        s_text);
+                        }
+                        if ( x == 2){
+                            bool legal_move = false; 
+                            while(legal_move == false){
+
+                                index = VerifyAndGetIndex_81(&mes,
+                                                                &s_move,
+                                                                &s_status,
+                                                                &s_receiver_player,
+                                                                &s_win,
+                                                                &s_lose,
+                                                                &s_win_stat,
+                                                                &s_lose_stat,
+                                                                &TYPE,
+                                                                s_text);
+
+                                if (game_data[index] == '.'){
+                                    game_data[index] = 'x';
+                                    position = PositionforCell(game_data,index);
+                                    index = Position(game_data, index);
+                                    legal_move = true;
+                                }
+                                else{
+                                    std::cout << "This sell is taken too.\n";
+                                }
+                            }
+                        }
+
+                    }
+
+                    ++taken_array[position];
+
+                    if ( CheckWinlocal( game_data, position) ){
+                        AddglobalWin(global_win,position, 'x');
+
+                        if (CheckWinglobal(global_win) == true){
+                            index = 100;
+                            PrintGame(game_data);
+                            std::cout << "You won\n";
+                            std::cout << "Quitting the game\n";
+                            mes.action = PLAYER_WIN_GAME;
+                            
+                            
+                            SendAndRecieve(&mes,
+                                            &s_move,
+                                            &s_status,
+                                            &s_receiver_player,
+                                            &s_win,
+                                            &s_lose,
+                                            &s_win_stat,
+                                            &s_lose_stat,
+                                            &TYPE,
+                                            s_text);
+                            exit(0);
+                            // Stupid???
+                            break;
+                        }
+                    }
+
+                    position = index;
+                    PrintGame(game_data);
+                    mes.action = UPDATE_MOVE_ON_OPPONENTS_SIDE;
+                    mes.movement = index;
+                    if ( decision == 1 ) {
+                        mes.receiverPlayer = std::stoi(string_player);
+                    }
+                    else{
+                        mes.receiverPlayer = s_receiver_player;
+                    }
+
+                    
+                    
+                    SendAndRecieve(&mes,
+                                    &s_move,
+                                    &s_status,
+                                    &s_receiver_player,
+                                    &s_win,
+                                    &s_lose,
+                                    &s_win_stat,
+                                    &s_lose_stat,
+                                    &TYPE,
+                                    s_text);
 
                     if (s_win == 1){
                         PrintMessageAndExitGame("You won by resignation");
@@ -498,348 +699,121 @@ int main(int        argc,
                         PrintMessageAndExitGame("You lost");
                     }
 
-                    if (turn == 1) {
-                        
-                        ok = false;
-                        bool first_time = true;
-                        while( ok != true){
-                            if( first_time == false){
-                                std::cout << "Inccorect index. Please type again\n";
-                                std::cout << "Enter index [1 ... 9] \n";
-                            }
-                            first_time = false;
-                            std::cin >> input;
+                    turn = 2;
+                    std::cout << "Opponent turn\n";
+                }
+                else {
 
-                            if( str_tolower(input) == "exit" ){
-                                s_lose = 0;
-                                while( s_lose != 1){
-                                    mes.action = EXIT_GAME_EARLY;
-                                    SendAndRecieve(&mes,
-                                                   &s_move,
-                                                   &s_status,
-                                                   &s_receiver_player,
-                                                   &s_win,
-                                                   &s_lose,
-                                                   &s_win_stat,
-                                                   &s_lose_stat,
-                                                   &TYPE,
-                                                   s_text);
-                                }
+                    mes.action = CHECK_IF_OPPONENT_MAKE_MOVE;
+                    mes.movement = -2;
+                    
+                    
+                    SendAndRecieve(&mes,
+                                    &s_move,
+                                    &s_status,
+                                    &s_receiver_player,
+                                    &s_win,
+                                    &s_lose,
+                                    &s_win_stat,
+                                    &s_lose_stat,
+                                    &TYPE,
+                                    s_text);
 
-                                PrintMessageAndExitGame("You lost by resignation");
-                            }
 
-                            index = std::stoi(input);
-                            if ( (index > 0) && (index < 10) ){
-                                ok = true;
-                            }
-                        }
-
-                        int x = -1;
-                        int escape = 1;
-                        while ( (x = Add(game_data, position, index, 'x', taken_array, escape) ) ){
-
-                            if ( x == 1){
-                                ok = false;
-                                bool first_time = true;
-                                while( ok != true){
-                                    if( first_time == false){
-                                        std::cout << "Inccorect index. Please type again\n";
-                                        std::cout << "Enter index [1 ... 9] \n";
-                                    }
-                                    first_time = false;
-                                    std::cin >> input;
-
-                                    if( str_tolower(input) == "exit" ){
-
-                                        s_lose = 0;
-                                        while( s_lose != 1){
-                                            mes.action = EXIT_GAME_EARLY;
-                                            SendAndRecieve(&mes,
-                                                           &s_move,
-                                                           &s_status,
-                                                           &s_receiver_player,
-                                                           &s_win,
-                                                           &s_lose,
-                                                           &s_win_stat,
-                                                           &s_lose_stat,
-                                                           &TYPE,
-                                                           s_text);
-                                        }
-
-                                        PrintMessageAndExitGame("You lost by resignation");
-                                    }
-
-                                    index = std::stoi(input);
-                                    if ( (index > 0) && (index < 10) ){
-                                        ok = true;
-                                    }
-                                }
-                            }
-                            if ( x == 2){
-                                bool legal_move = false; 
-                                while(legal_move == false){
-
-                                    ok = false;
-                                    bool first_time = true;
-                                    while( ok != true){
-                                        if (first_time == true){
-                                            std::cout << "Enter index [1 ... 81] which is free\n";
-                                            PrintInfo(info_data);
-                                        }
-                                        else{
-                                            std::cout << "Inccorect index. Please type again\n";
-                                            std::cout << "Enter index [1 ... 81] \n";
-                                        }
-                                        first_time = false;
-
-                                        std::cin >> input;
-                                        if( str_tolower(input) == "exit" ){
-                                            s_lose = 0;
-                                            while( s_lose != 1){
-                                                mes.action = EXIT_GAME_EARLY;
-                                                SendAndRecieve(&mes,
-                                                               &s_move,
-                                                               &s_status,
-                                                               &s_receiver_player,
-                                                               &s_win,
-                                                               &s_lose,
-                                                               &s_win_stat,
-                                                               &s_lose_stat,
-                                                               &TYPE,
-                                                               s_text);
-                                            }
-
-                                            PrintMessageAndExitGame("You lost by resignation");
-                                        }
-
-                                        index = std::stoi(input);
-                                        if ( index > 0 && index < 82 ){
-                                            ok = true;
-                                        }
-                                    }
-
-                                    if (game_data[index] == '.'){
-                                        game_data[index] = 'x';
-                                        position = PositionforCell(game_data,index);
-                                        index = Position(game_data, index);
-                                        legal_move = true;
-                                    }
-                                    else{
-                                        std::cout << "This sell is taken too.\n";
-                                    }
-                                }
-                            }
-
-                        }
-
-                        ++taken_array[position];
-
-                        if ( CheckWinlocal( game_data, position) ){
-                            AddglobalWin(global_win,position, 'x');
-
-                            if (CheckWinglobal(global_win) == true){
-                                index = 100;
-                                PrintGame(game_data);
-                                std::cout << "You won\n";
-                                std::cout << "Quitting the game\n";
-                                mes.action = PLAYER_WIN_GAME;
-                                
-                                
-                                SendAndRecieve(&mes,
-                                               &s_move,
-                                               &s_status,
-                                               &s_receiver_player,
-                                               &s_win,
-                                               &s_lose,
-                                               &s_win_stat,
-                                               &s_lose_stat,
-                                               &TYPE,
-                                               s_text);
-                                exit(0);
-                                // Stupid???
-                                break;
-                            }
-                        }
-
-                        position = index;
-                        PrintGame(game_data);
-                        mes.action = UPDATE_MOVE_ON_OPPONENTS_SIDE;
-                        mes.movement = index;
-                        if ( decision == 1 ) {
-                            mes.receiverPlayer = std::stoi(string_player);
-                        }
-                        else{
-                            mes.receiverPlayer = s_receiver_player;
-                        }
-
-                        
-                        
-                        SendAndRecieve(&mes,
-                                       &s_move,
-                                       &s_status,
-                                       &s_receiver_player,
-                                       &s_win,
-                                       &s_lose,
-                                       &s_win_stat,
-                                       &s_lose_stat,
-                                       &TYPE,
-                                       s_text);
-
-                        if (s_win == 1){
-                            PrintMessageAndExitGame("You won by resignation");
-                        }
-                        if (s_lose == 1){
-                            PrintMessageAndExitGame("You lost");
-                        }
-
-                        turn = 2;
-                        std::cout << "Opponent turn\n";
-                    }
-                    else {
-
+                    while( s_move == -2){
                         mes.action = CHECK_IF_OPPONENT_MAKE_MOVE;
-                        mes.movement = -2;
                         
                         
                         SendAndRecieve(&mes,
-                                       &s_move,
-                                       &s_status,
-                                       &s_receiver_player,
-                                       &s_win,
-                                       &s_lose,
-                                       &s_win_stat,
-                                       &s_lose_stat,
-                                       &TYPE,
-                                       s_text);
+                                        &s_move,
+                                        &s_status,
+                                        &s_receiver_player,
+                                        &s_win,
+                                        &s_lose,
+                                        &s_win_stat,
+                                        &s_lose_stat,
+                                        &TYPE,
+                                        s_text);
 
-
-                        while( s_move == -2){
-                            mes.action = CHECK_IF_OPPONENT_MAKE_MOVE;
-                            
-                            
-                            SendAndRecieve(&mes,
-                                           &s_move,
-                                           &s_status,
-                                           &s_receiver_player,
-                                           &s_win,
-                                           &s_lose,
-                                           &s_win_stat,
-                                           &s_lose_stat,
-                                           &TYPE,
-                                           s_text);
-
-                        }
-                        if (s_win == 1){
-                            PrintMessageAndExitGame("You won by resignation");
-                        }
-                        if (s_lose == 1){
-                            PrintMessageAndExitGame("You lost");
-                        }
-
-                        std::cout << "\n";
-                        index = s_move;
-                        int escape = 1;
-                        if ( (index > 0) && (index < 10) ){
-                            Add(game_data, position, index, '0', taken_array, escape);
-                        }
-                        else{
-                            game_data[index] = '0';
-                            position = PositionforCell(game_data,index);
-                            index = Position(game_data , index);
-                            escape = 0;
-                        }
-
-                        ++taken_array[position];
-
-                        if ( CheckWinlocal( game_data , position ) ){
-                            AddglobalWin(global_win, position, '0');
-                            if ( CheckWinglobal(global_win) ){
-                                index = 100;
-
-                                PrintGame(game_data);
-                                PrintMessageAndExitGame("You lost");
-                                // ??
-                                break;
-                            }
-                        }
-
-                        position = index;
-                        turn = 1;
-                        PrintGame(game_data);
-                        std::cout << "Enter index [1 ... 9] \n";
                     }
+                    if (s_win == 1){
+                        PrintMessageAndExitGame("You won by resignation");
+                    }
+                    if (s_lose == 1){
+                        PrintMessageAndExitGame("You lost");
+                    }
+
+                    std::cout << "\n";
+                    index = s_move;
+                    int escape = 1;
+                    if ( (index > 0) && (index < 10) ){
+                        Add(game_data, position, index, '0', taken_array, escape);
+                    }
+                    else{
+                        game_data[index] = '0';
+                        position = PositionforCell(game_data,index);
+                        index = Position(game_data , index);
+                        escape = 0;
+                    }
+
+                    ++taken_array[position];
+
+                    if ( CheckWinlocal( game_data , position ) ){
+                        AddglobalWin(global_win, position, '0');
+                        if ( CheckWinglobal(global_win) ){
+                            index = 100;
+
+                            PrintGame(game_data);
+                            PrintMessageAndExitGame("You lost");
+                            // ??
+                            break;
+                        }
+                    }
+
+                    position = index;
+                    turn = 1;
+                    PrintGame(game_data);
+                    std::cout << "Enter index [1 ... 9] \n";
                 }
             }
         }
     }
-    else{
-        bool first_time;
-        switch (decision){
+    if (TYPE == 2){
+        if( decision == 1){
+            ChooseAndVerifyOpponetsID(&mes,
+                                      &s_move,
+                                      &s_status,
+                                      &s_receiver_player,
+                                      &s_win,
+                                      &s_lose,
+                                      &s_win_stat,
+                                      &s_lose_stat,
+                                      &TYPE,
+                                      s_text);
 
-            //case To play with guy you want
-            case 1:
-
-                first_time = true;
-                correct_input = false;
-                while( correct_input != true){
-                    if (first_time == false){
-                        std::cout << "Inccorect ID. Please type again\n";
-                    }
-                    first_time = false;
-
-                    std::cout << "Enter ID of another player from [0 ; " << SizeArray << "]: ";
-                    std::cin >> string_player;
-                    if( str_tolower(string_player) == "exit" ){
-                        s_lose = 0;
-                        while( s_lose != 1){
-                            mes.action = EXIT_GAME_EARLY;
-                            SendAndRecieve(&mes,
-                                           &s_move,
-                                           &s_status,
-                                           &s_receiver_player,
-                                           &s_win,
-                                           &s_lose,
-                                           &s_win_stat,
-                                           &s_lose_stat,
-                                           &TYPE,
-                                           s_text);
-                        }
-                        PrintMessageAndExitGame("You lost by resignation");
-                    }
-
-                    mes.receiverPlayer = std::stoi(string_player);
-                    if ( mes.receiverPlayer > 0 && mes.receiverPlayer < SizeArray ){
-                        correct_input = true;
-                    }
-                }
-
-                //need to check it?
-                mes.status = 2;
-            break;
-
-            //case To connect random guy who is ready
-            case 2:
-                std::cout << "Searching a player...\n";
-                s_status = 0;
-                while( s_status != 2){
-                    mes.action = FIND_OPPONENT;
-                    mes.receiverPlayer = -2;
-                    
-                    mes.playertype = TYPE;
-                    SendAndRecieve(&mes,
-                                   &s_move,
-                                   &s_status,
-                                   &s_receiver_player,
-                                   &s_win,
-                                   &s_lose,
-                                   &s_win_stat,
-                                   &s_lose_stat,
-                                   &TYPE,
-                                   s_text);
-                }
-                mes.receiverPlayer = s_receiver_player;
-            break;
+            //need to check it?
+            mes.status = 2;
+        }
+        if( decision == 2){
+            std::cout << "Searching a player...\n";
+            s_status = 0;
+            while( s_status != 2){
+                mes.action = FIND_OPPONENT;
+                mes.receiverPlayer = -2;
+                
+                mes.playertype = TYPE;
+                SendAndRecieve(&mes,
+                                &s_move,
+                                &s_status,
+                                &s_receiver_player,
+                                &s_win,
+                                &s_lose,
+                                &s_win_stat,
+                                &s_lose_stat,
+                                &TYPE,
+                                s_text);
+            }
+            mes.receiverPlayer = s_receiver_player;
         }
 
         if ( decision == 1 ) {
@@ -849,17 +823,7 @@ int main(int        argc,
             mes.receiverPlayer = s_receiver_player;
         }
 
-        puts("----------------------------------------------------------\n");
-
-        std::cout << "Player is found\n";
-        std::cout << "You are playing against " << mes.receiverPlayer << " player\n";
-        std::cout << "3\n";
-        sleep(1);
-        std::cout << "2\n";
-        sleep(1);
-        std::cout << "1\n";
-        sleep(1);
-        std::cout << "Game Starts\n";
+        NotifyAboutStart(mes.receiverPlayer);
 
         
         int position;
@@ -882,9 +846,7 @@ int main(int        argc,
         PrintGame(game_data);
 
         int index = -1;
-        std::string input;
         int turn = 1;
-        int ok = false;
 
         std::cout << "Opponent turn\n";
 
@@ -921,7 +883,7 @@ int main(int        argc,
         signal(SIGTSTP, GracefulQuit);//ctr + Z
         signal(SIGINT, GracefulQuit);//ctr + c
 
-        if ( flag == 3){
+        if ( PROGRAM_ABORT_HANDLER == PROGRAM_STOP){
             s_lose = 0;
             while( s_lose != 1){
                 mes.action = EXIT_GAME_EARLY;
@@ -940,11 +902,40 @@ int main(int        argc,
             exit(0);
         }
 
-        while(flag!=3){
+        while(PROGRAM_ABORT_HANDLER!=PROGRAM_STOP){
 
-            if(!flag){
+            while ( index != 100 ){
 
-                while ( index != 100 ){
+                if (s_win == 1){
+                    PrintMessageAndExitGame("You won by resignation");
+                }
+                if (s_lose == 1){
+                    PrintMessageAndExitGame("You lost");
+                }
+
+                if (turn == 1) {
+                    mes.action = CHECK_IF_OPPONENT_MAKE_MOVE;
+                    mes.movement = -2;
+                    s_move = -7;
+                    
+                    
+                    SendAndRecieve(&mes,&s_move,&s_status,&s_receiver_player,&s_win,&s_lose,&s_win_stat,&s_lose_stat,&TYPE,s_text);
+
+                    while( s_move == -2){
+                        mes.action = CHECK_IF_OPPONENT_MAKE_MOVE;
+                        
+                        
+                        SendAndRecieve(&mes,
+                                        &s_move,
+                                        &s_status,
+                                        &s_receiver_player,
+                                        &s_win,
+                                        &s_lose,
+                                        &s_win_stat,
+                                        &s_lose_stat,
+                                        &TYPE,
+                                        s_text);
+                    }
 
                     if (s_win == 1){
                         PrintMessageAndExitGame("You won by resignation");
@@ -953,265 +944,162 @@ int main(int        argc,
                         PrintMessageAndExitGame("You lost");
                     }
 
-                    if (turn == 1) {
-                        mes.action = CHECK_IF_OPPONENT_MAKE_MOVE;
-                        mes.movement = -2;
-                        s_move = -7;
-                        
-                        
-                        SendAndRecieve(&mes,&s_move,&s_status,&s_receiver_player,&s_win,&s_lose,&s_win_stat,&s_lose_stat,&TYPE,s_text);
+                    std::cout << "\n";
 
-                        while( s_move == -2){
-                            mes.action = CHECK_IF_OPPONENT_MAKE_MOVE;
+                    index = s_move;
+                    int escape = 1;
+                    if ( (index > 0) && (index < 10) ){
+                        Add( game_data , position , index , 'x',taken_array,escape);
+                    }
+                    else{
+                        game_data[index] = 'x';
+                        position = PositionforCell(game_data,index);
+                        index = Position(game_data , index);
+                        escape = 0;
+                    }
+
+                    ++taken_array[position];
+                    if ( CheckWinlocal(game_data, position) ){
+
+                        AddglobalWin(global_win,position, 'x');
+                        if ( CheckWinglobal(global_win) ){
+                            index = 100;
+                            PrintGame(game_data);
+                            PrintMessageAndExitGame("You lost");
+                            // ????
+                            break;
+                        }
+                    }
+
+                    position = index;
+                    turn = 2;
+                    PrintGame(game_data);
+                    std::cout << "Enter index [1 ... 9] \n";
+                }
+                else {
+
+                    index = VerifyAndGetIndex_9(&mes,
+                                                &s_move,
+                                                &s_status,
+                                                &s_receiver_player,
+                                                &s_win,
+                                                &s_lose,
+                                                &s_win_stat,
+                                                &s_lose_stat,
+                                                &TYPE,
+                                                s_text);
+
+                    int x = -1;
+                    int escape = 1;
+                    while ( (x = Add(game_data, position, index, '0', taken_array, escape) ) ){
+                        if ( x == 1){
+                            index = VerifyAndGetIndex_9(&mes,
+                                                        &s_move,
+                                                        &s_status,
+                                                        &s_receiver_player,
+                                                        &s_win,
+                                                        &s_lose,
+                                                        &s_win_stat,
+                                                        &s_lose_stat,
+                                                        &TYPE,
+                                                        s_text);
+                        }
+                        if ( x == 2){
+
+                            int legal_move = false; 
+                            PrintInfo(info_data);
+                            while(legal_move == false){
+
+                                index = VerifyAndGetIndex_81(&mes,
+                                                                &s_move,
+                                                                &s_status,
+                                                                &s_receiver_player,
+                                                                &s_win,
+                                                                &s_lose,
+                                                                &s_win_stat,
+                                                                &s_lose_stat,
+                                                                &TYPE,
+                                                                s_text);
+
+                                if (game_data[index] == '.'){
+                                    game_data[index] = '0';
+                                    position = PositionforCell(game_data,index);
+                                    index = Position(game_data , index);
+                                    legal_move = true;
+                                    escape = 0;
+                                }
+                                else{
+                                    std::cout << "This sell is taken too.\n";
+                                }
+                            }
+                        }
+                    }
+
+                    ++taken_array[position];
+
+                    if ( CheckWinlocal( game_data , position ) ){
+                        AddglobalWin(global_win, position, '0');
+                        if ( CheckWinglobal(global_win) ){
+                            index = 100;
+                            PrintGame(game_data);
+                            std::cout << "You won \n";
+                            std::cout << "Quitting the game\n";
+
+                            mes.action = PLAYER_WIN_GAME;
                             
                             
                             SendAndRecieve(&mes,
-                                           &s_move,
-                                           &s_status,
-                                           &s_receiver_player,
-                                           &s_win,
-                                           &s_lose,
-                                           &s_win_stat,
-                                           &s_lose_stat,
-                                           &TYPE,
-                                           s_text);
+                                            &s_move,
+                                            &s_status,
+                                            &s_receiver_player,
+                                            &s_win,
+                                            &s_lose,
+                                            &s_win_stat,
+                                            &s_lose_stat,
+                                            &TYPE,
+                                            s_text);
+                            exit(0);
+                            // ???
+                            break;
                         }
-
-                        if (s_win == 1){
-                            PrintMessageAndExitGame("You won by resignation");
-                        }
-                        if (s_lose == 1){
-                            PrintMessageAndExitGame("You lost");
-                        }
-
-                        std::cout << "\n";
-
-                        index = s_move;
-                        int escape = 1;
-                        if ( (index > 0) && (index < 10) ){
-                            Add( game_data , position , index , 'x',taken_array,escape);
-                        }
-                        else{
-                            game_data[index] = 'x';
-                            position = PositionforCell(game_data,index);
-                            index = Position(game_data , index);
-                            escape = 0;
-                        }
-
-                        ++taken_array[position];
-                        if ( CheckWinlocal(game_data, position) ){
-
-                            AddglobalWin(global_win,position, 'x');
-                            if ( CheckWinglobal(global_win) ){
-                                index = 100;
-                                PrintGame(game_data);
-                                PrintMessageAndExitGame("You lost");
-                                // ????
-                                break;
-                            }
-                        }
-
-                        position = index;
-                        turn = 2;
-                        PrintGame(game_data);
-                        std::cout << "Enter index [1 ... 9] \n";
                     }
-                    else {
 
-                        ok = false;
-                        bool first_time = true;
-                        while( ok != true){
-                            if( first_time == false ){
-                                std::cout << "Inccorect index. Please type again\n";
-                                std::cout << "Enter index [1 ... 9] \n";
-                            }
-                            first_time = false;
-
-                            std::cin >> input;
-                            if( str_tolower(input) == "exit" ){
-                                s_lose = 0;
-                                while( s_lose != 1){
-                                    mes.action = EXIT_GAME_EARLY;
-                                    SendAndRecieve(&mes,
-                                                   &s_move,
-                                                   &s_status,
-                                                   &s_receiver_player,
-                                                   &s_win,
-                                                   &s_lose,
-                                                   &s_win_stat,
-                                                   &s_lose_stat,
-                                                   &TYPE,
-                                                   s_text);
-                                }
-
-                                PrintMessageAndExitGame("You lost by resignation");
-                            }
-                            index = std::stoi(input);
-                            if ( (index > 0) && (index < 10) ){
-                                ok = true;
-                            }    
-                        }
-
-                        int x = -1;
-                        int escape = 1;
-                        while ( (x = Add(game_data, position, index, '0', taken_array, escape) ) ){
-                            if ( x == 1){
-
-                                ok = false;
-                                bool first_time = true;
-                                while( ok != true){
-                                    if( first_time == false){
-                                        std::cout << "Inccorect index. Please type again\n";
-                                        std::cout << "Enter index [1 ... 9] \n";
-                                    }
-                                    first_time = false;
-
-                                    std::cin >> input;
-                                    if( str_tolower(input) == "exit" ){
-                                        s_lose = 0;
-                                        while( s_lose != 1){
-                                            mes.action = EXIT_GAME_EARLY;
-                                            SendAndRecieve(&mes,
-                                                          &s_move,
-                                                          &s_status,
-                                                          &s_receiver_player,
-                                                          &s_win,
-                                                          &s_lose,
-                                                          &s_win_stat,
-                                                          &s_lose_stat,
-                                                          &TYPE,
-                                                          s_text);   
-                                        }
-                                        PrintMessageAndExitGame("You lost by resignation");
-                                    }
-
-                                    index = std::stoi(input);
-                                    if ( (index > 0) && (index < 10) ){
-                                        ok = true;
-                                    }
-                                }
-                            }
-                            if ( x == 2){
-
-                                int legal_move = false; 
-                                while(legal_move == false){
-  
-                                    ok = false;
-                                    bool first_time = true;
-                                    while( ok != true){
-                                        if (first_time == true){
-                                            std::cout << "Enter index [1 ... 81] which is free \n";
-                                            PrintInfo(info_data);
-                                        }
-                                        else{
-                                            std::cout << "Inccorect index. Please type again\n";
-                                            std::cout << "Enter index [1 ... 81] \n";
-                                        }
-                                        first_time = false;
-
-                                        std::cin >> input;
-                                        if( str_tolower(input) == "exit" ){
-                                            s_lose = 0;
-                                            while( s_lose != 1){
-                                                mes.action = EXIT_GAME_EARLY;
-                                                SendAndRecieve(&mes,
-                                                               &s_move,
-                                                               &s_status,
-                                                               &s_receiver_player,
-                                                               &s_win,
-                                                               &s_lose,
-                                                               &s_win_stat,
-                                                               &s_lose_stat,
-                                                               &TYPE,
-                                                               s_text);   
-                                            }
-                                            PrintMessageAndExitGame("You lost by resignation");
-                                        }
-                                        index = std::stoi(input);
-                                        if ( index > 0 && index < 82 ){
-                                            ok = true;
-                                        }
-                                    }
-
-                                    if (game_data[index] == '.'){
-                                        game_data[index] = '0';
-                                        position = PositionforCell(game_data,index);
-                                        index = Position(game_data , index);
-                                        legal_move = true;
-                                        escape = 0;
-                                    }
-                                    else{
-                                        std::cout << "This sell is taken too.\n";
-                                    }
-                                }
-                            }
-                        }
-
-                        ++taken_array[position];
-
-                        if ( CheckWinlocal( game_data , position ) ){
-                            AddglobalWin(global_win, position, '0');
-                            if ( CheckWinglobal(global_win) ){
-                                index = 100;
-                                PrintGame(game_data);
-                                std::cout << "You won \n";
-                                std::cout << "Quitting the game\n";
-
-                                mes.action = PLAYER_WIN_GAME;
-                                
-                                
-                                SendAndRecieve(&mes,
-                                               &s_move,
-                                               &s_status,
-                                               &s_receiver_player,
-                                               &s_win,
-                                               &s_lose,
-                                               &s_win_stat,
-                                               &s_lose_stat,
-                                               &TYPE,
-                                               s_text);
-                                exit(0);
-                                // ???
-                                break;
-                            }
-                        }
-
-                        position = index;
-                        PrintGame(game_data);
-                        mes.action = UPDATE_MOVE_ON_OPPONENTS_SIDE;
-                        mes.movement = index;
-                        if ( decision == 1 ) {
-                            mes.receiverPlayer = std::stoi(string_player);
-                        }
-                        else{
-                            mes.receiverPlayer = s_receiver_player;
-                        }
-
-                        
-                        
-                        SendAndRecieve(&mes,
-                                       &s_move,
-                                       &s_status,
-                                       &s_receiver_player,
-                                       &s_win,
-                                       &s_lose,
-                                       &s_win_stat,
-                                       &s_lose_stat,
-                                       &TYPE,
-                                       s_text);
-
-                        if (s_win == 1){
-                            PrintMessageAndExitGame("You won by resignation");
-                        }
-                        if (s_lose == 1){
-                            PrintMessageAndExitGame("You lost");
-                        }
-
-                        turn = 1;
-                        std::cout << "Opponent turn\n";
+                    position = index;
+                    PrintGame(game_data);
+                    mes.action = UPDATE_MOVE_ON_OPPONENTS_SIDE;
+                    mes.movement = index;
+                    if ( decision == 1 ) {
+                        mes.receiverPlayer = std::stoi(string_player);
                     }
+                    else{
+                        mes.receiverPlayer = s_receiver_player;
+                    }
+
+                    
+                    
+                    SendAndRecieve(&mes,
+                                    &s_move,
+                                    &s_status,
+                                    &s_receiver_player,
+                                    &s_win,
+                                    &s_lose,
+                                    &s_win_stat,
+                                    &s_lose_stat,
+                                    &TYPE,
+                                    s_text);
+
+                    if (s_win == 1){
+                        PrintMessageAndExitGame("You won by resignation");
+                    }
+                    if (s_lose == 1){
+                        PrintMessageAndExitGame("You lost");
+                    }
+
+                    turn = 1;
+                    std::cout << "Opponent turn\n";
                 }
             }
+        
         }
     }
 
