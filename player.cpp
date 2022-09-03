@@ -1,28 +1,25 @@
-
 /*
-This program is the private property of Viktor Petrosyan. 
-Any use without the consent of the author is prohibited. 
-The program began writing on January 4, 2019 
-Last edit 26 January 2019 at 15: 49
+This program is the private property of Victor Petrosyan. 
+Any use without the consent of the author is prohibited.
+The program began writing on January 4, 2019
 */
 
 #include <iostream>
 #include <string>
 #include <cctype>
+#include <ctime>
 
-#include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <stdbool.h>
 #include <zmq.h>
 #include <pthread.h>
 #include <signal.h>
-#include <time.h>
 #include <sys/ioctl.h>
+
 #include "functions.h"
 #include "message.h"
 
+volatile sig_atomic_t PROGRAM_ABORT_HANDLER = PROGRAM_RUN;
 
 std::string str_tolower(std::string s) {
     std::transform(s.begin(), s.end(), s.begin(), 
@@ -30,9 +27,6 @@ std::string str_tolower(std::string s) {
                   );
     return s;
 }
-
-volatile sig_atomic_t PROGRAM_ABORT_HANDLER = PROGRAM_RUN;
-
 
 void GracefulQuit(int tmp){
 	std::cout << "You lost by resignation\n";
@@ -816,16 +810,8 @@ int main(int        argc,
             mes.receiverPlayer = s_receiver_player;
         }
 
-        if ( decision == 1 ) {
-            mes.receiverPlayer = std::stoi(string_player);
-        }
-        else{
-            mes.receiverPlayer = s_receiver_player;
-        }
-
         NotifyAboutStart(mes.receiverPlayer);
 
-        
         int position;
         int* info_data = (int* ) malloc( ( SizeV + 1 ) * sizeof(int));
         char* game_data = (char* ) malloc( ( SizeV + 1 ) * sizeof(char));
