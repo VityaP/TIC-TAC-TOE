@@ -143,9 +143,8 @@ void* GetSocket(int         argc,
     std::cout << "Enter the address of server : ";
     std::cin >> adress;
 
-    char txt[30];
-    sprintf(txt, "%s%d", "tcp://localhost:", adress);
-    zmq_connect(request, txt); //creating socket
+    std::string txt = "tcp://localhost:" + std::to_string(adress);
+    zmq_connect(request, txt.c_str()); //creating socket
     return request;
 }
 
@@ -172,7 +171,6 @@ int main(int        argc,
 
     bool    correct_input;
     
-
     switch (decision){
         case 1:
             mes.action = REGISTER_PLAYER;
@@ -328,14 +326,12 @@ int main(int        argc,
             //case To connect random guy who is ready
             case 2:
                 std::cout << "Searching a player...\n";
-
                 s_status = 0;
                 while( s_status != 2){
                     mes.action = FIND_OPPONENT;
                     mes.receiverPlayer = -2;
                     
                     mes.playertype = TYPE;
-                    
                     SendAndRecieve(&mes,
                                    &s_move,
                                    &s_status,
@@ -424,7 +420,7 @@ int main(int        argc,
             }
 
             index = std::stoi(input);
-            if ( index > 0 && index < 82 ){
+            if ( (index > 0) && (index < 82) ){
                 ok = true;
             }
         }
@@ -440,7 +436,6 @@ int main(int        argc,
         else{
             mes.receiverPlayer = s_receiver_player;
         }
-        
         
         SendAndRecieve(&mes,
                        &s_move,
@@ -810,7 +805,6 @@ int main(int        argc,
                                            &TYPE,
                                            s_text);
                         }
-
                         PrintMessageAndExitGame("You lost by resignation");
                     }
 
@@ -827,14 +821,12 @@ int main(int        argc,
             //case To connect random guy who is ready
             case 2:
                 std::cout << "Searching a player...\n";
-
                 s_status = 0;
                 while( s_status != 2){
                     mes.action = FIND_OPPONENT;
                     mes.receiverPlayer = -2;
                     
-                    mes.playertype = 2; // mes.playertype = TYPE;
-                    
+                    mes.playertype = TYPE;
                     SendAndRecieve(&mes,
                                    &s_move,
                                    &s_status,

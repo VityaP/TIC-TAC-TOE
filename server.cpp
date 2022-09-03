@@ -180,7 +180,7 @@ int main (int argc, char *argv[]) {
 
 					case REGISTER_PLAYER :
 						//To add player in database
-
+						mes->lose = 0;
 						if(EnteringTOserver(&list,mes->id,TYPE,mes->status)){
 							
 							//sprintf(mes->text,"successful conection to server");
@@ -217,6 +217,7 @@ int main (int argc, char *argv[]) {
            
 					case UPDATE_MOVE_ON_OPPONENTS_SIDE :
 						//To write move of current player in array of his opponent
+						mes->lose = 0;
 
 						if(Find(&list,mes->receiverPlayer)){
 
@@ -254,6 +255,7 @@ int main (int argc, char *argv[]) {
 
 					case CHECK_IF_OPPONENT_MAKE_MOVE :
 						// To check if another player make move and get movment value from array
+						mes->lose = 0;
 
 						if(Find(&list,mes->id)){
 
@@ -280,7 +282,6 @@ int main (int argc, char *argv[]) {
 
 								}
 								else{
-
 									mes->lose = 1;
 
 								}
@@ -308,7 +309,7 @@ int main (int argc, char *argv[]) {
 
 					case FIND_OPPONENT :
 						//To find waiting player to start game player in database
-
+						mes->lose = 0;
 						Connect_player(&list,mes->id,mes->playertype);
 
 						mes->receiverPlayer = OpponentID(&list,mes->id);
