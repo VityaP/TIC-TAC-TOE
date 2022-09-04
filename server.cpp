@@ -76,9 +76,8 @@ int main (int argc, char *argv[]) {
 	int movmentArray[SizeArray];
 	int statsGameWin[SizeArray];
 	int statsGameLose[SizeArray];
-	struct ScoreArray statisticArray[SizeArray];
 	for(size_t i = 0; i < SizeArray; i++){
-		movmentArray[i] = -2;
+		movmentArray[i] = EMPTY_CELL;
 	}
 	for(size_t i = 0; i < SizeArray; i++){
 		statsGameLose[i] = 0;
@@ -86,10 +85,7 @@ int main (int argc, char *argv[]) {
 	for(size_t i = 0; i < SizeArray; i++){
 		statsGameWin[i] = 0;
 	}
-	for(size_t i = 0; i < SizeArray; i++){
-		statisticArray[i].ID = i;
-		statisticArray[i].Score = 0;
-	}
+
 
 	void* respond = GetSocket(argc, argv);
 
@@ -132,18 +128,17 @@ int main (int argc, char *argv[]) {
 				case UPDATE_MOVE_ON_OPPONENTS_SIDE :
 					//To write move of current player in array of his opponent
 					mes->lose = 0;
-					if(Find(&list, mes->receiverPlayer)){
-						if ( movmentArray[mes->id] != -5 ){
+					if(Find(&list, mes->opponentID)){
+						if ( movmentArray[mes->id] != OPPONENT_LOSE ){
 							mes->win = 0;
-							movmentArray[mes->receiverPlayer] = mes->movement;
-							//sprintf(mes->text,"succecfull");
+							movmentArray[mes->opponentID] = mes->movement;
 						}
 						else{
 							mes->win = 1;
 						}
 					}
 					else{
-						printf("ID : %d  doesn't exist\n", mes->receiverPlayer);
+						printf("ID : %d  doesn't exist\n", mes->opponentID);
 					}
 					break;
 
@@ -151,22 +146,22 @@ int main (int argc, char *argv[]) {
 					// To check if another player make move and get move value from movmentArray
 					mes->lose = 0;
 					if(Find(&list, mes->id)){
-						if ((movmentArray[mes->id] != -5) && (movmentArray[mes->id] != -15)){
+						if ((movmentArray[mes->id] != OPPONENT_LOSE) && (movmentArray[mes->id] != OPPONENT_WIN)){
 							mes->win = 0;
 							mes->movement = movmentArray[mes-> id];
-							if ( movmentArray[mes-> id] != -2){
-								movmentArray[mes-> id] = -2;
+							if ( movmentArray[mes-> id] != EMPTY_CELL){
+								movmentArray[mes-> id] = EMPTY_CELL;
 							}
 						}
 						else {
 							mes->movement = movmentArray[mes-> id];
-							if (movmentArray[mes->id] == -5){
+							if (movmentArray[mes->id] == OPPONENT_LOSE){
 								mes->win = 1;
 							}
 							else{
 								mes->lose = 1;
 							}
-							movmentArray[mes-> id] = -2;
+							movmentArray[mes-> id] = EMPTY_CELL;
 						}
 					}
 					else{
@@ -178,8 +173,8 @@ int main (int argc, char *argv[]) {
 					//To find waiting player to start game player in database
 					mes->lose = 0;
 					Connect_player(&list, mes->id, mes->playertype);
-					mes->receiverPlayer = OpponentID(&list,mes->id);
-					if ( mes->receiverPlayer != -1){
+					mes->opponentID = OpponentID(&list, mes->id);
+					if ( mes->opponentID != -1){
 						mes->status=2;
 						Printdatabase(&list);
 						printf("\n");
@@ -189,13 +184,13 @@ int main (int argc, char *argv[]) {
 				case EXIT_GAME_EARLY :
 					//If you quit the game till it end
 					mes->lose = 1;
-					mes->receiverPlayer = OpponentID(&list, mes->id);
+					mes->opponentID = OpponentID(&list, mes->id);
 					++statsGameLose[mes->id];
-					++statsGameWin[mes->receiverPlayer];
-					movmentArray[mes->receiverPlayer] = -5;
+					++statsGameWin[mes->opponentID];
+					movmentArray[mes->opponentID] = OPPONENT_LOSE;
 
 					Disconnect_player(&list, mes->id);
-					Disconnect_player(&list, mes->receiverPlayer);
+					Disconnect_player(&list, mes->opponentID);
 					Printdatabase(&list);
 					printf("\n"); 
 					break;  
@@ -226,12 +221,12 @@ int main (int argc, char *argv[]) {
 				case PLAYER_WIN_GAME :
 					//If you win the game
 					statsGameWin[mes->id]++;
-					mes->receiverPlayer = OpponentID(&list,mes->id);
-					++statsGameLose[mes->receiverPlayer];
-					movmentArray[mes->receiverPlayer] = -15;
+					mes->opponentID = OpponentID(&list,mes->id);
+					++statsGameLose[mes->opponentID];
+					movmentArray[mes->opponentID] = OPPONENT_WIN;
 
 					Disconnect_player(&list, mes->id);
-					Disconnect_player(&list, mes->receiverPlayer);
+					Disconnect_player(&list, mes->opponentID);
 					Printdatabase(&list);
 					printf("\n");
 					break; 
@@ -241,7 +236,7 @@ int main (int argc, char *argv[]) {
 					if (Delete_players(&list, mes->id) ){
 						statsGameWin[mes->id] = 0;
 						statsGameLose[mes->id] = 0;
-						movmentArray[mes->id] = -2;
+						movmentArray[mes->id] = EMPTY_CELL;
 					}
 					else{
 						//sprintf(mes->text,"No gamer with %d ID",mes->id);
