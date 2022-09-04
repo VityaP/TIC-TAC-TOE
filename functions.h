@@ -1,35 +1,50 @@
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
 
+#include <map>
+#include "message.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #define SizeV 81
 #define SizeArray 20
 
-typedef struct _players{
-    int id;
-    int id_opponent;
-    int status;
-    int type;
-    struct _players *next;
-}players;
 
-extern int Find(players **head,int id);
+struct Player{
+	int id       	= EMPTY_CELL;
+	int id_opponent = EMPTY_CELL;
+    int type		= EMPTY_CELL;
+	int last_move 	= EMPTY_CELL;
+    int status		= STATUS_MANUAL;
+	int winRate  	= 0;
+	int loseRate 	= 0;
 
-extern void Printdatabase(players **head);
+	friend bool operator<(const Player& lhs, const Player& rhs){
+		return lhs.id < rhs.id;
+	}
+};
 
-extern int Delete_players(players **head,int id);
 
-extern void Disconnect_player(players **head,int id);
+extern int Find(std::map<int, Player>& players, int id);
 
-extern int Connect_player(players **head,int id,int type);
+extern void Printdatabase(std::map<int, Player>& players);
 
-extern int OpponentID(players **head,int id);
+extern int Delete_players(std::map<int, Player>& players, int id);
 
-extern int Getstatus(players **head,int id);
+extern void Disconnect_player(std::map<int, Player>& players, int id);
 
-extern int EnteringTOserver(players **head,int id,int type,int status);
+extern int Connect_player(std::map<int, Player>& players, int id, int type);
+
+extern int OpponentID(std::map<int, Player>& players, int id);
+
+extern int Getstatus(std::map<int, Player>& players, int id);
+
+extern int EnteringTOserver(std::map<int, Player>& players, int id, int type, int status);
+
+
+
+
 
 extern void PrintInfo( int * Array);
 

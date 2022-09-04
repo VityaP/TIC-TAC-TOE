@@ -7,6 +7,7 @@ The program began writing on January 4, 2019
 Last edit 26 January 2019 at 15: 49
 */
 #include <string>
+#include <map>
 
 #include <string.h>
 #include <stdio.h>
@@ -16,16 +17,10 @@ Last edit 26 January 2019 at 15: 49
 
 #include <time.h>
 #include <sys/ioctl.h>
-// #include <stropts.h>
 
 #include "zmq.h"
 #include "message.h"
 #include "functions.h"
-
-struct ScoreArray{
-	int ID;
-	int Score;
-};
 
 
 volatile sig_atomic_t SERVER_ABORT_HANDLER = 0;
@@ -68,23 +63,12 @@ void* GetSocket(int         argc,
 	return respond;
 }
 
+
 int main (int argc, char *argv[]) {
 	zmq_msg_t reply;
-	players* list = NULL;
 	int TYPE = 1;
 
-	int movmentArray[SizeArray];
-	int statsGameWin[SizeArray];
-	int statsGameLose[SizeArray];
-	for(size_t i = 0; i < SizeArray; i++){
-		movmentArray[i] = EMPTY_CELL;
-	}
-	for(size_t i = 0; i < SizeArray; i++){
-		statsGameLose[i] = 0;
-	}
-	for(size_t i = 0; i < SizeArray; i++){
-		statsGameWin[i] = 0;
-	}
+	std::map<int, Player> players;
 
 
 	void* respond = GetSocket(argc, argv);
@@ -107,7 +91,7 @@ int main (int argc, char *argv[]) {
 			switch(mes->action){
 				case REGISTER_PLAYER :
 					mes->lose = 0;
-					if(EnteringTOserver(&list, mes->id, TYPE, mes->status)){
+					if(EnteringTOserver(players, mes->id, TYPE, mes->status)){
 						mes->playertype = TYPE;
 						if ( TYPE == 1 ) {
 							TYPE = 2;
@@ -115,23 +99,23 @@ int main (int argc, char *argv[]) {
 						else{
 							TYPE = 1;
 						}
-						Printdatabase(&list);
+						Printdatabase(players);
 						printf("\n");
 					}
 					else{
 						// ?????
 						mes->win = 1;
-						mes->status = Getstatus(&list, mes->id);
+						mes->status = Getstatus(players, mes->id);
 					}
 					break;                                                       
 		
 				case UPDATE_MOVE_ON_OPPONENTS_SIDE :
 					//To write move of current player in array of his opponent
 					mes->lose = 0;
-					if(Find(&list, mes->opponentID)){
-						if ( movmentArray[mes->id] != OPPONENT_LOSE ){
+					if(Find(players, mes->opponentID)){
+						if ( players[mes->id].last_move != OPPONENT_LOSE ){
 							mes->win = 0;
-							movmentArray[mes->opponentID] = mes->movement;
+							players[mes->opponentID].last_move = mes->movement;
 						}
 						else{
 							mes->win = 1;
@@ -145,23 +129,23 @@ int main (int argc, char *argv[]) {
 				case CHECK_IF_OPPONENT_MAKE_MOVE :
 					// To check if another player make move and get move value from movmentArray
 					mes->lose = 0;
-					if(Find(&list, mes->id)){
-						if ((movmentArray[mes->id] != OPPONENT_LOSE) && (movmentArray[mes->id] != OPPONENT_WIN)){
+					if(Find(players, mes->id)){
+						if ((players[mes->id].last_move != OPPONENT_LOSE) && (players[mes->id].last_move != OPPONENT_WIN)){
 							mes->win = 0;
-							mes->movement = movmentArray[mes-> id];
-							if ( movmentArray[mes-> id] != EMPTY_CELL){
-								movmentArray[mes-> id] = EMPTY_CELL;
+							mes->movement = players[mes-> id].last_move;
+							if ( players[mes-> id].last_move != EMPTY_CELL){
+								players[mes-> id].last_move = EMPTY_CELL;
 							}
 						}
 						else {
-							mes->movement = movmentArray[mes-> id];
-							if (movmentArray[mes->id] == OPPONENT_LOSE){
+							mes->movement = players[mes-> id].last_move;
+							if (players[mes->id].last_move == OPPONENT_LOSE){
 								mes->win = 1;
 							}
 							else{
 								mes->lose = 1;
 							}
-							movmentArray[mes-> id] = EMPTY_CELL;
+							players[mes-> id].last_move = EMPTY_CELL;
 						}
 					}
 					else{
@@ -172,11 +156,11 @@ int main (int argc, char *argv[]) {
 				case FIND_OPPONENT :
 					//To find waiting player to start game player in database
 					mes->lose = 0;
-					Connect_player(&list, mes->id, mes->playertype);
-					mes->opponentID = OpponentID(&list, mes->id);
+					Connect_player(players, mes->id, mes->playertype);
+					mes->opponentID = OpponentID(players, mes->id);
 					if ( mes->opponentID != -1){
-						mes->status=2;
-						Printdatabase(&list);
+						mes->status=STATUS_IN_GAME;
+						Printdatabase(players);
 						printf("\n");
 					}
 					break; 
@@ -184,27 +168,25 @@ int main (int argc, char *argv[]) {
 				case EXIT_GAME_EARLY :
 					//If you quit the game till it end
 					mes->lose = 1;
-					mes->opponentID = OpponentID(&list, mes->id);
-					++statsGameLose[mes->id];
-					++statsGameWin[mes->opponentID];
-					movmentArray[mes->opponentID] = OPPONENT_LOSE;
+					mes->opponentID = OpponentID(players, mes->id);
+					++players[mes->id].loseRate;
+					++players[mes->opponentID].winRate;
+					players[mes->opponentID].last_move = OPPONENT_LOSE;
 
-					Disconnect_player(&list, mes->id);
-					Disconnect_player(&list, mes->opponentID);
-					Printdatabase(&list);
+					Disconnect_player(players, mes->id);
+					Disconnect_player(players, mes->opponentID);
+					Printdatabase(players);
 					printf("\n"); 
 					break;  
 
 				case SHOW_PERSONAL_STATISTICS :
 					//To print stat of current player
-					if(Find(&list, mes->id)){
-						mes->winstat = statsGameWin[mes->id];
-						mes->losestat = statsGameLose[mes->id];
+					if(Find(players, mes->id)){
+						mes->winstat = players[mes->id].winRate;
+						mes->losestat = players[mes->id].loseRate;
 					}
 					else{
 						// ???? what for if
-						mes->winstat = statsGameWin[mes->id];
-						mes->losestat = statsGameLose[mes->id];
 					}
 					break;   
 
@@ -214,29 +196,29 @@ int main (int argc, char *argv[]) {
 
 				case SHOW_DATABASE_ON_SERVERSIDE :
 					//To print DB in server
-					Printdatabase(&list);
+					Printdatabase(players);
 					printf("\n");
 					break;  
 
 				case PLAYER_WIN_GAME :
 					//If you win the game
-					statsGameWin[mes->id]++;
-					mes->opponentID = OpponentID(&list,mes->id);
-					++statsGameLose[mes->opponentID];
-					movmentArray[mes->opponentID] = OPPONENT_WIN;
+					++players[mes->id].winRate;
+					mes->opponentID = OpponentID(players, mes->id);
+					++players[mes->opponentID].loseRate;
+					players[mes->opponentID].last_move = OPPONENT_WIN;
 
-					Disconnect_player(&list, mes->id);
-					Disconnect_player(&list, mes->opponentID);
-					Printdatabase(&list);
+					Disconnect_player(players, mes->id);
+					Disconnect_player(players, mes->opponentID);
+					Printdatabase(players);
 					printf("\n");
 					break; 
 
 				case DELETE_PLAYER :
 					//To delete player from database
-					if (Delete_players(&list, mes->id) ){
-						statsGameWin[mes->id] = 0;
-						statsGameLose[mes->id] = 0;
-						movmentArray[mes->id] = EMPTY_CELL;
+					if (Delete_players(players, mes->id) ){
+						players[mes->id].winRate = 0;
+						players[mes->id].loseRate = 0;
+						players[mes->id].last_move = EMPTY_CELL;
 					}
 					else{
 						//sprintf(mes->text,"No gamer with %d ID",mes->id);

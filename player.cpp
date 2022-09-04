@@ -323,7 +323,7 @@ int main(int        argc,
             mes.action = REGISTER_PLAYER;
 
 
-            mes.status = 10 + decision;
+            mes.status = STATUS_PLAYER_WITH_FRIEND;
             SendAndRecieve(&mes, 
                            &s_move, 
                            &s_status, 
@@ -431,7 +431,7 @@ int main(int        argc,
                                   &TYPE);
 
         //need to check it?
-        mes.status = 2;
+        mes.status = STATUS_IN_GAME;
     }
     if( decision == 2){
         std::cout << "Searching a player...\n";
