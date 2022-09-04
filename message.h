@@ -31,6 +31,7 @@ typedef struct _msg{
 #define PLAYER_WIN_GAME                 9
 
 #define PROGRAM_RUN 0
+#define PROGRAM_PAUSE 1
 #define PROGRAM_STOP 3
 
 #endif
