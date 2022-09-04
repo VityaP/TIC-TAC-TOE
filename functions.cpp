@@ -4,6 +4,9 @@ This program is the private property of Viktor Petrosyan.
 Any use without the consent of the author is prohibited
 */
 
+#include <vector>
+#include <stdio.h>
+
 #include "functions.h"
 #include "message.h"
 
@@ -101,7 +104,7 @@ int EnteringTOserver(std::map<int, Player>& players, int id, int type, int statu
 
 
 
-void PrintInfo( int * Array){
+void PrintInfo(const std::vector<int>& Array){
     for(size_t n = 0; n <= 54; n = n + 27){
         for(size_t s = 0; s <= 6; s = s + 3){
             for(size_t k = 0; k <= 18; k = k + 9){
@@ -116,7 +119,7 @@ void PrintInfo( int * Array){
     }
 }
 
-void PrintGame( char * Array){
+void PrintGame(const std::vector<char>& Array){
     for(size_t n = 0; n <= 54; n = n + 27){
         for(size_t s = 0; s <= 6; s = s + 3){
             for(size_t k = 0; k <= 18; k = k + 9){
@@ -131,7 +134,7 @@ void PrintGame( char * Array){
     }
 }
 
-int Position( char * Array , int index){
+int Position(const std::vector<char>& Array, int index){
     for(size_t n = 0; n <= 54; n = n + 27){
         for(size_t s = 0; s <= 6; s = s + 3){
             for(size_t k = 0; k <= 18; k = k + 9){
@@ -146,7 +149,7 @@ int Position( char * Array , int index){
     return -2;
 }
 
-int PositionforCell( char * Array , int index){
+int PositionforCell(const std::vector<char>& Array, int index){
     for(size_t n = 0; n <= 54; n = n + 27){
         for(size_t s = 0; s <= 6; s = s + 3){
             for(size_t k = 0; k <= 18; k = k + 9){
@@ -187,7 +190,7 @@ int PositionforCell( char * Array , int index){
     return -2;
 }
 
-int Add( char * Array , int lastindex , int userindex , char what , int * taken,int escape){
+int Add(std::vector<char>& Array, int lastindex, int userindex, char what, const std::vector<int>& taken, int escape){
 
     int k , n;
 
@@ -277,7 +280,7 @@ int Add( char * Array , int lastindex , int userindex , char what , int * taken,
 
 }
 
-int Check( char * Array , int lastindex , int userindex){
+int Check(const std::vector<char>& Array, int lastindex, int userindex){
 
     int i , s;
 
@@ -390,7 +393,7 @@ int Check( char * Array , int lastindex , int userindex){
 
 }
 
-int CheckWinlocal( char * Array , int lastindex ){
+int CheckWinlocal(const std::vector<char>& Array, int lastindex){
 
     int OK = 0;
 
@@ -693,7 +696,7 @@ int CheckWinlocal( char * Array , int lastindex ){
 
 }
 
-void AddglobalWin( char * Array , int index , char what){
+void AddglobalWin(std::vector<char>& Array, int index, char what){
 
     if(Array[index] == '.'){
 
@@ -703,13 +706,13 @@ void AddglobalWin( char * Array , int index , char what){
     
 }
 
-int CheckGlobal( char * Array , int index ){
+int CheckGlobal(const std::vector<char>& Array, int index){
 
     return Array[index];
 
 }
 
-int CheckWinglobal( char * Array ){
+int CheckWinglobal(const std::vector<char>& Array){
 
     int OK = 0;
 

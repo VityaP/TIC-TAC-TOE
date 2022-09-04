@@ -1,12 +1,11 @@
 #ifndef MESSAGE_H
 #define MESSAGE_H
 
-typedef struct _msg{    
+struct message{    
     int     id;
     int     movement;
     int     opponentID;
-    int     decision;
-    int     status; //0 manual conection //1 waiting //2 in game //3 in DB but mo in game
+    int     status;
     int     lose;   //0 manual //1 if lose
     int     win;
     int     winstat;
@@ -14,7 +13,7 @@ typedef struct _msg{
     int     playertype;
     int     action;
     void*   socket;
-} message;
+};
 
 #define DELETE_PLAYER                       -1
 #define REGISTER_PLAYER                      1
@@ -41,5 +40,8 @@ typedef struct _msg{
 #define STATUS_IN_GAME                       2
 #define STATUS_REGISTERED_BUT_NOT_IN_GAME    3
 #define STATUS_PLAYER_WITH_FRIEND           11
+
+#define NO                                   0
+#define YES                                  1
 
 #endif

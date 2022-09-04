@@ -8,6 +8,7 @@ The program began writing on January 4, 2019
 #include <string>
 #include <cctype>
 #include <ctime>
+#include <vector>
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -46,9 +47,7 @@ void SendAndRecieve(message*    mes,
                     int*        s_status, 
                     int*        s_opponent_ID, 
                     int*        s_win, 
-                    int*        s_lose, 
-                    int*        s_win_stat, 
-                    int*        s_lose_stat, 
+                    int*        s_lose,
                     int*        TYPE){
 
     zmq_msg_t request;
@@ -65,8 +64,6 @@ void SendAndRecieve(message*    mes,
     *s_opponent_ID = mes->opponentID;
     *s_win = mes->win;
     *s_lose = mes->lose;
-    *s_win_stat = mes->winstat;
-    *s_lose_stat = mes->losestat;
     *TYPE = mes->playertype;
     zmq_msg_close(&request);
 }
@@ -156,9 +153,7 @@ int VerifyAndGetIndex_81(message*    mes,
                          int*        s_status, 
                          int*        s_opponent_ID, 
                          int*        s_win, 
-                         int*        s_lose, 
-                         int*        s_win_stat, 
-                         int*        s_lose_stat, 
+                         int*        s_lose,
                          int*        TYPE){
 
     int index = -1;
@@ -174,8 +169,8 @@ int VerifyAndGetIndex_81(message*    mes,
         std::cin >> input;
 
         if( str_tolower(input) == "exit" ){
-            *s_lose = 0;
-            while( *s_lose != 1){
+            *s_lose = NO;
+            while(*s_lose != YES){
                 mes->action = EXIT_GAME_EARLY;
                 SendAndRecieve(mes,
                                s_move,
@@ -183,8 +178,6 @@ int VerifyAndGetIndex_81(message*    mes,
                                s_opponent_ID,
                                s_win,
                                s_lose,
-                               s_win_stat,
-                               s_lose_stat,
                                TYPE);
             }
             PrintMessageAndExitGame("You lost by resignation");
@@ -203,9 +196,7 @@ int VerifyAndGetIndex_9(message*    mes,
                         int*        s_status, 
                         int*        s_opponent_ID, 
                         int*        s_win, 
-                        int*        s_lose, 
-                        int*        s_win_stat, 
-                        int*        s_lose_stat, 
+                        int*        s_lose,
                         int*        TYPE){
 
     int index = -1;
@@ -221,8 +212,8 @@ int VerifyAndGetIndex_9(message*    mes,
         std::cin >> input;
 
         if( str_tolower(input) == "exit" ){
-            *s_lose = 0;
-            while( *s_lose != 1){
+            *s_lose = NO;
+            while( *s_lose != YES){
                 mes->action = EXIT_GAME_EARLY;
                 SendAndRecieve(mes,
                                s_move,
@@ -230,8 +221,6 @@ int VerifyAndGetIndex_9(message*    mes,
                                s_opponent_ID,
                                s_win,
                                s_lose,
-                               s_win_stat,
-                               s_lose_stat,
                                TYPE);
             }
             PrintMessageAndExitGame("You lost by resignation");
@@ -249,9 +238,7 @@ void ChooseAndVerifyOpponetsID(message*    mes,
                                int*        s_status, 
                                int*        s_opponent_ID, 
                                int*        s_win, 
-                               int*        s_lose, 
-                               int*        s_win_stat, 
-                               int*        s_lose_stat, 
+                               int*        s_lose,
                                int*        TYPE){
 
     bool first_time = true;
@@ -266,8 +253,8 @@ void ChooseAndVerifyOpponetsID(message*    mes,
         std::cout << "Enter ID of another player: ";
         std::cin >> string_player;
         if( str_tolower(string_player) == "exit" ){
-            *s_lose = 0;
-            while( *s_lose != 1){
+            *s_lose = NO;
+            while( *s_lose != YES){
                 mes->action = EXIT_GAME_EARLY;
                 SendAndRecieve(mes,
                                s_move,
@@ -275,8 +262,6 @@ void ChooseAndVerifyOpponetsID(message*    mes,
                                s_opponent_ID,
                                s_win,
                                s_lose,
-                               s_win_stat,
-                               s_lose_stat,
                                TYPE);
             }
             PrintMessageAndExitGame("You lost by resignation");
@@ -290,10 +275,10 @@ void ChooseAndVerifyOpponetsID(message*    mes,
 }
 
 void CheckGameCondition(int s_win, int s_lose){
-    if (s_win == 1){
+    if (s_win == YES){
         PrintMessageAndExitGame("You won by resignation");
     }
-    if (s_lose == 1){
+    if (s_lose == YES){
         PrintMessageAndExitGame("You lost");
     }
 }
@@ -305,14 +290,12 @@ int main(int        argc,
     void*   request             = GetSocket(argc, argv);    
     int     decision            = GetMenuDecision();
 
-    int     TYPE                = 0;
-    int     s_win               = 0;
-    int     s_lose              = 0;
-    int     s_status            = 0;
-    int     s_move              = 0;
-    int     s_win_stat          = 0;
-    int     s_lose_stat         = 0;
-    int     s_opponent_ID   = 0;
+    int     TYPE                = NO;
+    int     s_win               = NO;
+    int     s_lose              = NO;
+    int     s_status            = NO;
+    int     s_move              = NO;
+    int     s_opponent_ID       = NO;
 
     message mes;
     mes.id                      = std::stoi(argv[1]);
@@ -321,24 +304,18 @@ int main(int        argc,
     switch (decision){
         case 1:
             mes.action = REGISTER_PLAYER;
-
-
             mes.status = STATUS_PLAYER_WITH_FRIEND;
             SendAndRecieve(&mes, 
                            &s_move, 
                            &s_status, 
                            &s_opponent_ID, 
                            &s_win, 
-                           &s_lose, 
-                           &s_win_stat, 
-                           &s_lose_stat, 
+                           &s_lose,
                            &TYPE);
             break;
 
         case 2:
             mes.action = REGISTER_PLAYER;
-            
-            
             mes.status = 10 + decision;
             SendAndRecieve(&mes,
                            &s_move,
@@ -346,8 +323,6 @@ int main(int        argc,
                            &s_opponent_ID,
                            &s_win,
                            &s_lose,
-                           &s_win_stat,
-                           &s_lose_stat,
                            &TYPE);
             break;
 
@@ -359,8 +334,6 @@ int main(int        argc,
                            &s_opponent_ID,
                            &s_win,
                            &s_lose,
-                           &s_win_stat,
-                           &s_lose_stat,
                            &TYPE);
             puts("------------------------Statistics------------------------\n");
 
@@ -376,8 +349,6 @@ int main(int        argc,
                            &s_opponent_ID,
                            &s_win,
                            &s_lose,
-                           &s_win_stat,
-                           &s_lose_stat,
                            &TYPE);
             puts("------------------------Statistics------------------------\n");
 
@@ -393,8 +364,6 @@ int main(int        argc,
                            &s_opponent_ID,
                            &s_win,
                            &s_lose,
-                           &s_win_stat,
-                           &s_lose_stat,
                            &TYPE);
             exit(0);
             break;
@@ -407,14 +376,12 @@ int main(int        argc,
                            &s_opponent_ID,
                            &s_win,
                            &s_lose,
-                           &s_win_stat,
-                           &s_lose_stat,
                            &TYPE);
             exit(0);
             break;
     }
 
-    if (s_status == 2){
+    if (s_status == STATUS_IN_GAME){
         PrintMessageAndExitGame("Sorry, this ID is in use now, choose another one");
     }
 
@@ -426,8 +393,6 @@ int main(int        argc,
                                   &s_opponent_ID,
                                   &s_win,
                                   &s_lose,
-                                  &s_win_stat,
-                                  &s_lose_stat,
                                   &TYPE);
 
         //need to check it?
@@ -435,11 +400,9 @@ int main(int        argc,
     }
     if( decision == 2){
         std::cout << "Searching a player...\n";
-        s_status = 0;
-        while( s_status != 2){
+        s_status = STATUS_MANUAL;
+        while(s_status != STATUS_IN_GAME){
             mes.action = FIND_OPPONENT;
-            mes.opponentID = -2;
-            
             mes.playertype = TYPE;
             SendAndRecieve(&mes,
                            &s_move,
@@ -447,8 +410,6 @@ int main(int        argc,
                            &s_opponent_ID,
                            &s_win,
                            &s_lose,
-                           &s_win_stat,
-                           &s_lose_stat,
                            &TYPE);
         }
         mes.opponentID = s_opponent_ID;
@@ -457,19 +418,12 @@ int main(int        argc,
     NotifyAboutStart(mes.opponentID);
 
     int position;
-    int* info_data = (int* ) malloc( ( SizeV + 1 ) * sizeof(int));
-    char* game_data = (char* ) malloc( ( SizeV + 1 ) * sizeof(char));
-    char* global_win = (char* ) malloc( ( 10 ) * sizeof(char));
-    int* taken_array = (int* ) malloc( ( 10 ) * sizeof(int));
-
-    for(size_t i = 0; i <= SizeV; ++i){
+    std::vector<int> info_data(SizeV + 1);
+    std::vector<char> game_data(SizeV + 1, '.');
+    std::vector<char> global_win(10, '.');
+    std::vector<int> taken_array(10, 0);
+    for(size_t i = 0; i < info_data.size(); ++i){
         info_data[i] = i;
-        game_data[i] = '.';
-    }
-
-    for(size_t i = 0; i < 10; ++i){
-        global_win[i] = '.';
-        taken_array[i] = 0;
     }
 
     PrintInfo(info_data);
@@ -484,8 +438,6 @@ int main(int        argc,
                                          &s_opponent_ID,
                                          &s_win,
                                          &s_lose,
-                                         &s_win_stat,
-                                         &s_lose_stat,
                                          &TYPE);
 
         game_data[index] = 'x';
@@ -500,8 +452,6 @@ int main(int        argc,
                        &s_opponent_ID,
                        &s_win,
                        &s_lose,
-                       &s_win_stat,
-                       &s_lose_stat,
                        &TYPE);
 
         CheckGameCondition(s_win, s_lose);
@@ -516,8 +466,8 @@ int main(int        argc,
         signal(SIGINT, GracefulQuit); //ctr + c
 
         if ( PROGRAM_ABORT_HANDLER == PROGRAM_STOP){
-            s_lose = 0;
-            while( s_lose != 1){
+            s_lose = NO;
+            while( s_lose != YES){
                 mes.action = EXIT_GAME_EARLY;
                 SendAndRecieve(&mes,
                                &s_move,
@@ -525,8 +475,6 @@ int main(int        argc,
                                &s_opponent_ID,
                                &s_win,
                                &s_lose,
-                               &s_win_stat,
-                               &s_lose_stat,
                                &TYPE);
             }
             PrintMessageAndExitGame("You lost by resignation");
@@ -546,8 +494,6 @@ int main(int        argc,
                                                 &s_opponent_ID,
                                                 &s_win,
                                                 &s_lose,
-                                                &s_win_stat,
-                                                &s_lose_stat,
                                                 &TYPE);
 
                     int x = -1;
@@ -561,8 +507,6 @@ int main(int        argc,
                                                         &s_opponent_ID,
                                                         &s_win,
                                                         &s_lose,
-                                                        &s_win_stat,
-                                                        &s_lose_stat,
                                                         &TYPE);
                         }
                         if ( x == 2){
@@ -575,8 +519,6 @@ int main(int        argc,
                                                              &s_opponent_ID,
                                                              &s_win,
                                                              &s_lose,
-                                                             &s_win_stat,
-                                                             &s_lose_stat,
                                                              &TYPE);
 
                                 if (game_data[index] == '.'){
@@ -609,8 +551,6 @@ int main(int        argc,
                                             &s_opponent_ID,
                                             &s_win,
                                             &s_lose,
-                                            &s_win_stat,
-                                            &s_lose_stat,
                                             &TYPE);
                             PrintMessageAndExitGame("You won");
                         }
@@ -628,8 +568,6 @@ int main(int        argc,
                                     &s_opponent_ID,
                                     &s_win,
                                     &s_lose,
-                                    &s_win_stat,
-                                    &s_lose_stat,
                                     &TYPE);
 
                     CheckGameCondition(s_win, s_lose);
@@ -647,8 +585,6 @@ int main(int        argc,
                                         &s_opponent_ID,
                                         &s_win,
                                         &s_lose,
-                                        &s_win_stat,
-                                        &s_lose_stat,
                                         &TYPE);
 
                     }
@@ -702,8 +638,6 @@ int main(int        argc,
                            &s_opponent_ID,
                            &s_win,
                            &s_lose,
-                           &s_win_stat,
-                           &s_lose_stat,
                            &TYPE);
         }
 
@@ -724,8 +658,8 @@ int main(int        argc,
         signal(SIGINT, GracefulQuit);//ctr + c
 
         if ( PROGRAM_ABORT_HANDLER == PROGRAM_STOP){
-            s_lose = 0;
-            while( s_lose != 1){
+            s_lose = NO;
+            while( s_lose != YES){
                 mes.action = EXIT_GAME_EARLY;
                 SendAndRecieve(&mes,
                                &s_move,
@@ -733,8 +667,6 @@ int main(int        argc,
                                &s_opponent_ID,
                                &s_win,
                                &s_lose,
-                               &s_win_stat,
-                               &s_lose_stat,
                                &TYPE);
                 
             }
@@ -758,8 +690,6 @@ int main(int        argc,
                                         &s_opponent_ID,
                                         &s_win,
                                         &s_lose,
-                                        &s_win_stat,
-                                        &s_lose_stat,
                                         &TYPE);
                     }
 
@@ -801,8 +731,6 @@ int main(int        argc,
                                                 &s_opponent_ID,
                                                 &s_win,
                                                 &s_lose,
-                                                &s_win_stat,
-                                                &s_lose_stat,
                                                 &TYPE);
 
                     int x = -1;
@@ -815,8 +743,6 @@ int main(int        argc,
                                                         &s_opponent_ID,
                                                         &s_win,
                                                         &s_lose,
-                                                        &s_win_stat,
-                                                        &s_lose_stat,
                                                         &TYPE);
                         }
                         if ( x == 2){
@@ -831,8 +757,6 @@ int main(int        argc,
                                                                 &s_opponent_ID,
                                                                 &s_win,
                                                                 &s_lose,
-                                                                &s_win_stat,
-                                                                &s_lose_stat,
                                                                 &TYPE);
 
                                 if (game_data[index] == '.'){
@@ -868,8 +792,6 @@ int main(int        argc,
                                             &s_opponent_ID,
                                             &s_win,
                                             &s_lose,
-                                            &s_win_stat,
-                                            &s_lose_stat,
                                             &TYPE);
                             exit(0);
                             // ???
@@ -890,8 +812,6 @@ int main(int        argc,
                                     &s_opponent_ID,
                                     &s_win,
                                     &s_lose,
-                                    &s_win_stat,
-                                    &s_lose_stat,
                                     &TYPE);
 
                     CheckGameCondition(s_win, s_lose);

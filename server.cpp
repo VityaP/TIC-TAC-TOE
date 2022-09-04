@@ -90,7 +90,7 @@ int main (int argc, char *argv[]) {
 
 			switch(mes->action){
 				case REGISTER_PLAYER :
-					mes->lose = 0;
+					mes->lose = NO;
 					if(EnteringTOserver(players, mes->id, TYPE, mes->status)){
 						mes->playertype = TYPE;
 						if ( TYPE == 1 ) {
@@ -104,21 +104,21 @@ int main (int argc, char *argv[]) {
 					}
 					else{
 						// ?????
-						mes->win = 1;
+						mes->win = YES;
 						mes->status = Getstatus(players, mes->id);
 					}
 					break;                                                       
 		
 				case UPDATE_MOVE_ON_OPPONENTS_SIDE :
 					//To write move of current player in array of his opponent
-					mes->lose = 0;
+					mes->lose = NO;
 					if(Find(players, mes->opponentID)){
 						if ( players[mes->id].last_move != OPPONENT_LOSE ){
-							mes->win = 0;
+							mes->win = NO;
 							players[mes->opponentID].last_move = mes->movement;
 						}
 						else{
-							mes->win = 1;
+							mes->win = YES;
 						}
 					}
 					else{
@@ -128,10 +128,10 @@ int main (int argc, char *argv[]) {
 
 				case CHECK_IF_OPPONENT_MAKE_MOVE :
 					// To check if another player make move and get move value from movmentArray
-					mes->lose = 0;
+					mes->lose = NO;
 					if(Find(players, mes->id)){
 						if ((players[mes->id].last_move != OPPONENT_LOSE) && (players[mes->id].last_move != OPPONENT_WIN)){
-							mes->win = 0;
+							mes->win = NO;
 							mes->movement = players[mes-> id].last_move;
 							if ( players[mes-> id].last_move != EMPTY_CELL){
 								players[mes-> id].last_move = EMPTY_CELL;
@@ -140,10 +140,10 @@ int main (int argc, char *argv[]) {
 						else {
 							mes->movement = players[mes-> id].last_move;
 							if (players[mes->id].last_move == OPPONENT_LOSE){
-								mes->win = 1;
+								mes->win = YES;
 							}
 							else{
-								mes->lose = 1;
+								mes->lose = YES;
 							}
 							players[mes-> id].last_move = EMPTY_CELL;
 						}
@@ -155,10 +155,10 @@ int main (int argc, char *argv[]) {
 
 				case FIND_OPPONENT :
 					//To find waiting player to start game player in database
-					mes->lose = 0;
+					mes->lose = NO;
 					Connect_player(players, mes->id, mes->playertype);
 					mes->opponentID = OpponentID(players, mes->id);
-					if ( mes->opponentID != -1){
+					if (mes->opponentID != -1){
 						mes->status=STATUS_IN_GAME;
 						Printdatabase(players);
 						printf("\n");
@@ -167,7 +167,7 @@ int main (int argc, char *argv[]) {
 
 				case EXIT_GAME_EARLY :
 					//If you quit the game till it end
-					mes->lose = 1;
+					mes->lose = YES;
 					mes->opponentID = OpponentID(players, mes->id);
 					++players[mes->id].loseRate;
 					++players[mes->opponentID].winRate;

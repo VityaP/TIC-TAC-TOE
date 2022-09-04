@@ -4,7 +4,6 @@
 #include <map>
 #include "message.h"
 
-#include <stdio.h>
 #define SizeV 81
 
 
@@ -43,25 +42,25 @@ extern int EnteringTOserver(std::map<int, Player>& players, int id, int type, in
 
 
 
-extern void PrintInfo( int * Array);
+extern void PrintInfo(const std::vector<int>& Array);
 
-extern void PrintGame( char * Array);
+extern void PrintGame(const std::vector<char>& Array);
 
-extern int Position( char * Array , int index);
+extern int Position(const std::vector<char>& Array, int index);
 
-extern int PositionforCell( char * Array , int index);
+extern int PositionforCell(const std::vector<char>& Array, int index);
 
-extern int Add( char * Array , int lastindex , int userindex , char what , int * taken,int escape);
+extern int Add(std::vector<char>& Array, int lastindex, int userindex, char what, const std::vector<int>& taken, int escape);
 
-extern int Check( char * Array , int lastindex , int userindex);
+extern int Check(const std::vector<char>& Array, int lastindex, int userindex);
 
-extern int CheckWinlocal( char * Array , int lastindex );
+extern int CheckWinlocal(const std::vector<char>& Array, int lastindex);
 
-extern void AddglobalWin( char * Array , int index , char what);
+extern void AddglobalWin(std::vector<char>& Array, int index, char what);
 
-extern int CheckGlobal( char * Array , int index );
+extern int CheckGlobal(const std::vector<char>& Array, int index);
 
-extern int CheckWinglobal( char * Array );
+extern int CheckWinglobal(const std::vector<char>& Array);
 
 #endif 
 /*FUNCTIONS_H*/
