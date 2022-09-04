@@ -123,8 +123,8 @@ void* GetSocket(int         argc,
         std::cout << "Example: ./player 5\n";
         exit(0);
     }
-    if ( (std::stoi(argv[1]) < 0) || (std::stoi(argv[1]) > (SizeArray - 1)) ){
-        std::cout << "ID should be from [0 ; " << SizeArray << "]\n";
+    if ( std::stoi(argv[1]) < 0 ){
+        std::cout << "ID should be > 0 \n";
         exit(0);
     }
 
@@ -263,7 +263,7 @@ void ChooseAndVerifyOpponetsID(message*    mes,
             std::cout << "Inccorect ID. Please type again\n";
         }
         first_time = false;
-        std::cout << "Enter ID of another player from [0 ; " << SizeArray << "]: ";
+        std::cout << "Enter ID of another player: ";
         std::cin >> string_player;
         if( str_tolower(string_player) == "exit" ){
             *s_lose = 0;
@@ -283,7 +283,7 @@ void ChooseAndVerifyOpponetsID(message*    mes,
         }
 
         mes->opponentID = std::stoi(string_player);
-        if ( (mes->opponentID > 0) && (mes->opponentID < SizeArray) ){
+        if ( mes->opponentID > 0 ){
             correct_input = true;
         }
     }

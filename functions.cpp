@@ -1,12 +1,8 @@
 
 /*
 This program is the private property of Viktor Petrosyan. 
-Any use without the consent of the author is prohibited. 
-The program began writing on January 4, 2019 
-Last edit 26 January 2019 at 15: 49
+Any use without the consent of the author is prohibited
 */
-
-#include <map>
 
 #include "functions.h"
 #include "message.h"

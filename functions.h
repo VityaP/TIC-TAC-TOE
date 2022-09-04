@@ -5,10 +5,7 @@
 #include "message.h"
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #define SizeV 81
-#define SizeArray 20
 
 
 struct Player{
