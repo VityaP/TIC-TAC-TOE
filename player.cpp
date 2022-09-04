@@ -49,8 +49,7 @@ void SendAndRecieve(message*    mes,
                     int*        s_lose, 
                     int*        s_win_stat, 
                     int*        s_lose_stat, 
-                    int*        TYPE, 
-                    char*       s_text){
+                    int*        TYPE){
 
     zmq_msg_t request;
     zmq_msg_init_size(&request, sizeof(message));
@@ -69,9 +68,6 @@ void SendAndRecieve(message*    mes,
     *s_win_stat = mes->winstat;
     *s_lose_stat = mes->losestat;
     *TYPE = mes->playertype;
-    for(size_t i = 0; i < Sizetext; i++){
-        s_text[i] = mes->text[i];
-    }
     zmq_msg_close(&request);
 }
 
@@ -163,15 +159,12 @@ int VerifyAndGetIndex_81(message*    mes,
                          int*        s_lose, 
                          int*        s_win_stat, 
                          int*        s_lose_stat, 
-                         int*        TYPE, 
-                         char*       s_text){
+                         int*        TYPE){
 
     int index = -1;
     std::string input;
-
     bool ok = false;
     bool first_time = true;
-
     while( ok != true){
         if (first_time == false){
             std::cout << "Inccorect index. Please type again\n";
@@ -192,8 +185,7 @@ int VerifyAndGetIndex_81(message*    mes,
                                s_lose,
                                s_win_stat,
                                s_lose_stat,
-                               TYPE,
-                               s_text);
+                               TYPE);
             }
             PrintMessageAndExitGame("You lost by resignation");
         }
@@ -214,8 +206,7 @@ int VerifyAndGetIndex_9(message*    mes,
                         int*        s_lose, 
                         int*        s_win_stat, 
                         int*        s_lose_stat, 
-                        int*        TYPE, 
-                        char*       s_text){
+                        int*        TYPE){
 
     int index = -1;
     std::string input;
@@ -241,8 +232,7 @@ int VerifyAndGetIndex_9(message*    mes,
                                s_lose,
                                s_win_stat,
                                s_lose_stat,
-                               TYPE,
-                               s_text);
+                               TYPE);
             }
             PrintMessageAndExitGame("You lost by resignation");
         }
@@ -262,8 +252,7 @@ void ChooseAndVerifyOpponetsID(message*    mes,
                                int*        s_lose, 
                                int*        s_win_stat, 
                                int*        s_lose_stat, 
-                               int*        TYPE, 
-                               char*       s_text){
+                               int*        TYPE){
 
     bool first_time = true;
     bool correct_input = false;
@@ -288,8 +277,7 @@ void ChooseAndVerifyOpponetsID(message*    mes,
                                s_lose,
                                s_win_stat,
                                s_lose_stat,
-                               TYPE,
-                               s_text);
+                               TYPE);
             }
             PrintMessageAndExitGame("You lost by resignation");
         }
@@ -325,7 +313,6 @@ int main(int        argc,
     int     s_win_stat          = 0;
     int     s_lose_stat         = 0;
     int     s_receiver_player   = 0;
-    char    s_text[Sizetext];
 
     message mes;
     mes.id                      = std::stoi(argv[1]);
@@ -345,8 +332,7 @@ int main(int        argc,
                            &s_lose, 
                            &s_win_stat, 
                            &s_lose_stat, 
-                           &TYPE, 
-                           s_text);
+                           &TYPE);
             break;
 
         case 2:
@@ -362,8 +348,7 @@ int main(int        argc,
                            &s_lose,
                            &s_win_stat,
                            &s_lose_stat,
-                           &TYPE,
-                           s_text);
+                           &TYPE);
             break;
 
         case 3:
@@ -376,11 +361,10 @@ int main(int        argc,
                            &s_lose,
                            &s_win_stat,
                            &s_lose_stat,
-                           &TYPE,
-                           s_text);
-            std::cout << "ID "    << std::stoi(argv[1]) 
-                      << " won "  << s_win_stat  << " times and" 
-                      << " lost " << s_lose_stat << " times\n";
+                           &TYPE);
+            puts("------------------------Statistics------------------------\n");
+
+            puts("----------------------------------------------------------\n");
             exit(0);
             break;
 
@@ -394,13 +378,9 @@ int main(int        argc,
                            &s_lose,
                            &s_win_stat,
                            &s_lose_stat,
-                           &TYPE,
-                           s_text);
+                           &TYPE);
             puts("------------------------Statistics------------------------\n");
-			for(int i = 0, j = 0; j < 5; i = i + 6){
-                std::cout << "ID\t" << s_text[i+1] << "\t won " << s_text[i+3] << " times and lost " << s_text[i+5] << " times\n";
-				++j;
-			}
+
             puts("----------------------------------------------------------\n");
             exit(0);            
             break;
@@ -415,8 +395,7 @@ int main(int        argc,
                            &s_lose,
                            &s_win_stat,
                            &s_lose_stat,
-                           &TYPE,
-                           s_text);
+                           &TYPE);
             exit(0);
             break;
 
@@ -430,8 +409,7 @@ int main(int        argc,
                            &s_lose,
                            &s_win_stat,
                            &s_lose_stat,
-                           &TYPE,
-                           s_text);
+                           &TYPE);
             exit(0);
             break;
     }
@@ -439,7 +417,6 @@ int main(int        argc,
     if (s_status == 2){
         PrintMessageAndExitGame("Sorry, this ID is in use now, choose another one");
     }
-
 
 
     if( decision == 1){
@@ -451,8 +428,7 @@ int main(int        argc,
                                   &s_lose,
                                   &s_win_stat,
                                   &s_lose_stat,
-                                  &TYPE,
-                                  s_text);
+                                  &TYPE);
 
         //need to check it?
         mes.status = 2;
@@ -473,8 +449,7 @@ int main(int        argc,
                            &s_lose,
                            &s_win_stat,
                            &s_lose_stat,
-                           &TYPE,
-                           s_text);
+                           &TYPE);
         }
         mes.receiverPlayer = s_receiver_player;
     }
@@ -511,8 +486,7 @@ int main(int        argc,
                                          &s_lose,
                                          &s_win_stat,
                                          &s_lose_stat,
-                                         &TYPE,
-                                         s_text);
+                                         &TYPE);
 
         game_data[index] = 'x';
         ++taken_array[PositionforCell(game_data, index)];
@@ -528,20 +502,18 @@ int main(int        argc,
                        &s_lose,
                        &s_win_stat,
                        &s_lose_stat,
-                       &TYPE,
-                       s_text);
+                       &TYPE);
 
         CheckGameCondition(s_win, s_lose);
 
-        PrintGame(game_data);
-
         turn = 2;
+        PrintGame(game_data);
         position = Position(game_data, index);
 
         std::cout << "Opponent turn\n";
 
-        signal(SIGTSTP, GracefulQuit);//ctr + Z
-        signal(SIGINT, GracefulQuit);//ctr + c
+        signal(SIGTSTP, GracefulQuit); //ctr + Z
+        signal(SIGINT, GracefulQuit); //ctr + c
 
         if ( PROGRAM_ABORT_HANDLER == PROGRAM_STOP){
             s_lose = 0;
@@ -555,8 +527,7 @@ int main(int        argc,
                                &s_lose,
                                &s_win_stat,
                                &s_lose_stat,
-                               &TYPE,
-                               s_text);
+                               &TYPE);
             }
             PrintMessageAndExitGame("You lost by resignation");
         }
@@ -577,8 +548,7 @@ int main(int        argc,
                                                 &s_lose,
                                                 &s_win_stat,
                                                 &s_lose_stat,
-                                                &TYPE,
-                                                s_text);
+                                                &TYPE);
 
                     int x = -1;
                     int escape = 1;
@@ -593,8 +563,7 @@ int main(int        argc,
                                                         &s_lose,
                                                         &s_win_stat,
                                                         &s_lose_stat,
-                                                        &TYPE,
-                                                        s_text);
+                                                        &TYPE);
                         }
                         if ( x == 2){
                             bool legal_move = false; 
@@ -608,8 +577,7 @@ int main(int        argc,
                                                              &s_lose,
                                                              &s_win_stat,
                                                              &s_lose_stat,
-                                                             &TYPE,
-                                                             s_text);
+                                                             &TYPE);
 
                                 if (game_data[index] == '.'){
                                     game_data[index] = 'x';
@@ -643,8 +611,7 @@ int main(int        argc,
                                             &s_lose,
                                             &s_win_stat,
                                             &s_lose_stat,
-                                            &TYPE,
-                                            s_text);
+                                            &TYPE);
                             PrintMessageAndExitGame("You won");
                         }
                     }
@@ -663,8 +630,7 @@ int main(int        argc,
                                     &s_lose,
                                     &s_win_stat,
                                     &s_lose_stat,
-                                    &TYPE,
-                                    s_text);
+                                    &TYPE);
 
                     CheckGameCondition(s_win, s_lose);
 
@@ -683,8 +649,7 @@ int main(int        argc,
                                         &s_lose,
                                         &s_win_stat,
                                         &s_lose_stat,
-                                        &TYPE,
-                                        s_text);
+                                        &TYPE);
 
                     }
                     CheckGameCondition(s_win, s_lose);
@@ -739,8 +704,7 @@ int main(int        argc,
                            &s_lose,
                            &s_win_stat,
                            &s_lose_stat,
-                           &TYPE,
-                           s_text);
+                           &TYPE);
         }
 
         CheckGameCondition(s_win, s_lose);
@@ -749,9 +713,11 @@ int main(int        argc,
         index = s_move;
         game_data[index] = 'x';
         ++taken_array[ PositionforCell(game_data, index) ];
+
         turn = 2;
         PrintGame(game_data);
         position = Position(game_data, index);
+
         std::cout << "Enter index [1 ... 9] \n"; 
 
         signal(SIGTSTP, GracefulQuit);//ctr + Z
@@ -769,8 +735,7 @@ int main(int        argc,
                                &s_lose,
                                &s_win_stat,
                                &s_lose_stat,
-                               &TYPE,
-                               s_text);
+                               &TYPE);
                 
             }
             PrintMessageAndExitGame("You lost by resignation");
@@ -795,8 +760,7 @@ int main(int        argc,
                                         &s_lose,
                                         &s_win_stat,
                                         &s_lose_stat,
-                                        &TYPE,
-                                        s_text);
+                                        &TYPE);
                     }
 
                     CheckGameCondition(s_win, s_lose);
@@ -839,8 +803,7 @@ int main(int        argc,
                                                 &s_lose,
                                                 &s_win_stat,
                                                 &s_lose_stat,
-                                                &TYPE,
-                                                s_text);
+                                                &TYPE);
 
                     int x = -1;
                     int escape = 1;
@@ -854,8 +817,7 @@ int main(int        argc,
                                                         &s_lose,
                                                         &s_win_stat,
                                                         &s_lose_stat,
-                                                        &TYPE,
-                                                        s_text);
+                                                        &TYPE);
                         }
                         if ( x == 2){
 
@@ -871,8 +833,7 @@ int main(int        argc,
                                                                 &s_lose,
                                                                 &s_win_stat,
                                                                 &s_lose_stat,
-                                                                &TYPE,
-                                                                s_text);
+                                                                &TYPE);
 
                                 if (game_data[index] == '.'){
                                     game_data[index] = '0';
@@ -909,8 +870,7 @@ int main(int        argc,
                                             &s_lose,
                                             &s_win_stat,
                                             &s_lose_stat,
-                                            &TYPE,
-                                            s_text);
+                                            &TYPE);
                             exit(0);
                             // ???
                             break;
@@ -932,8 +892,7 @@ int main(int        argc,
                                     &s_lose,
                                     &s_win_stat,
                                     &s_lose_stat,
-                                    &TYPE,
-                                    s_text);
+                                    &TYPE);
 
                     CheckGameCondition(s_win, s_lose);
 
