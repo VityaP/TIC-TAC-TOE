@@ -6,16 +6,13 @@ Any use without the consent of the author is prohibited.
 The program began writing on January 4, 2019 
 Last edit 26 January 2019 at 15: 49
 */
-#include <string>
 #include <map>
+#include <string>
+#include <iostream>
 
-#include <string.h>
-#include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <signal.h>
-
-#include <time.h>
 #include <sys/ioctl.h>
 
 #include "zmq.h"
@@ -26,17 +23,17 @@ Last edit 26 January 2019 at 15: 49
 volatile sig_atomic_t SERVER_ABORT_HANDLER = 0;
 
 void ServerBlockFunction(int tmp){
-	printf("Server blocked\n");
+	std::cout << "Server blocked\n";
     SERVER_ABORT_HANDLER = PROGRAM_PAUSE;
 }
 
 void ServerUnblockFunction(int tmp){
-	printf("Server unblocked\n");
+	std::cout << "Server unblocked\n";
     SERVER_ABORT_HANDLER = PROGRAM_RUN;
 }
 
 void ServerGracefulQuit(int tmp){
-	printf("\nServer quit\n");
+	std::cout << "Server quit\n";
 	SERVER_ABORT_HANDLER = PROGRAM_STOP;
 }
 
@@ -63,14 +60,11 @@ void* GetSocket(int         argc,
 	return respond;
 }
 
-
 int main (int argc, char *argv[]) {
 	zmq_msg_t reply;
 	int TYPE = 1;
 
 	std::map<int, Player> players;
-
-
 	void* respond = GetSocket(argc, argv);
 
 	signal(SIGTSTP, ServerBlockFunction);   //ctr + Z
@@ -100,7 +94,7 @@ int main (int argc, char *argv[]) {
 							TYPE = 1;
 						}
 						Printdatabase(players);
-						printf("\n");
+						std::cout << "\n";
 					}
 					else{
 						// ?????
@@ -122,7 +116,7 @@ int main (int argc, char *argv[]) {
 						}
 					}
 					else{
-						printf("ID : %d  doesn't exist\n", mes->opponentID);
+						std::cout << "ID : " << mes->opponentID << "  doesn't exist\n";
 					}
 					break;
 
@@ -149,7 +143,7 @@ int main (int argc, char *argv[]) {
 						}
 					}
 					else{
-						printf("ID : %d doesn't exist\n",mes->id);
+						std::cout << "ID : " << mes->id << "  doesn't exist\n";
 					}
 					break;            
 
@@ -161,7 +155,7 @@ int main (int argc, char *argv[]) {
 					if (mes->opponentID != -1){
 						mes->status=STATUS_IN_GAME;
 						Printdatabase(players);
-						printf("\n");
+						std::cout << "\n";
 					}
 					break; 
 
@@ -176,7 +170,7 @@ int main (int argc, char *argv[]) {
 					Disconnect_player(players, mes->id);
 					Disconnect_player(players, mes->opponentID);
 					Printdatabase(players);
-					printf("\n"); 
+					std::cout << "\n";
 					break;  
 
 				case SHOW_PERSONAL_STATISTICS :
@@ -197,7 +191,7 @@ int main (int argc, char *argv[]) {
 				case SHOW_DATABASE_ON_SERVERSIDE :
 					//To print DB in server
 					Printdatabase(players);
-					printf("\n");
+					std::cout << "\n";
 					break;  
 
 				case PLAYER_WIN_GAME :
@@ -210,7 +204,7 @@ int main (int argc, char *argv[]) {
 					Disconnect_player(players, mes->id);
 					Disconnect_player(players, mes->opponentID);
 					Printdatabase(players);
-					printf("\n");
+					std::cout << "\n";
 					break; 
 
 				case DELETE_PLAYER :
