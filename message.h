@@ -44,4 +44,6 @@ struct message{
 #define NO                                   0
 #define YES                                  1
 
+#define END_OF_GAME                        100
+
 #endif
