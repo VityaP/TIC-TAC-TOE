@@ -42,11 +42,11 @@ void PrintMessageAndExitGame(const std::string& mes){
     exit(0);
 }
 
-void SendAndRecieve(message*    mes, 
-                    int*        s_move, 
-                    int*        s_status, 
-                    int*        s_opponent_ID, 
-                    int*        s_win, 
+void SendAndRecieve(message*    mes,
+                    int*        s_move,
+                    int*        s_status,
+                    int*        s_opponent_ID,
+                    int*        s_win,
                     int*        s_lose,
                     int*        TYPE){
 
@@ -576,8 +576,8 @@ int main(int        argc,
                     std::cout << "Opponent turn\n";
                 }
                 else {
-                    s_move = -2;
-                    while( s_move == -2){
+                    s_move = EMPTY_CELL;
+                    while( s_move == EMPTY_CELL){
                         mes.action = CHECK_IF_OPPONENT_MAKE_MOVE;
                         SendAndRecieve(&mes,
                                         &s_move,
@@ -629,8 +629,8 @@ int main(int        argc,
         int index = -1;
         std::cout << "Opponent turn\n";
 
-        s_move = -2;
-        while( s_move == -2){
+        s_move = EMPTY_CELL;
+        while( s_move == EMPTY_CELL){
             mes.action = CHECK_IF_OPPONENT_MAKE_MOVE;
             SendAndRecieve(&mes,
                            &s_move,
@@ -681,8 +681,8 @@ int main(int        argc,
 
                 if (turn == 1) {
 
-                    s_move = -2;
-                    while( s_move == -2){
+                    s_move = EMPTY_CELL;
+                    while( s_move == EMPTY_CELL){
                         mes.action = CHECK_IF_OPPONENT_MAKE_MOVE;
                         SendAndRecieve(&mes,
                                         &s_move,
