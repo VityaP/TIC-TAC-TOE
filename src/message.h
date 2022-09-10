@@ -6,7 +6,7 @@ Any use without the consent of the author is prohibited.
 #ifndef MESSAGE_H
 #define MESSAGE_H
 
-struct message{    
+struct message{
     int     id;
     int     movement;
     int     opponentID;
