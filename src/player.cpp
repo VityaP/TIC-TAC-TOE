@@ -393,7 +393,7 @@ int main(int        argc,
     }
 
     PrintInfo(info_data);
-    PrintGame(game_data);
+    PrintGame(game_data, global_win);
 
     int turn = 1;
 
@@ -419,7 +419,7 @@ int main(int        argc,
         CheckGameCondition(s_win, s_lose);
 
         turn = 2;
-        PrintGame(game_data);
+        PrintGame(game_data, global_win);
         position = Position(game_data, index);
 
         std::cout << "Opponent turn\n";
@@ -493,7 +493,7 @@ int main(int        argc,
 
                         if(CheckWinglobal(global_win) == true){
                             index = END_OF_GAME;
-                            PrintGame(game_data);
+                            PrintGame(game_data, global_win);
 
                             mes.action = PLAYER_WIN_GAME;
                             SendAndRecieve(&mes,
@@ -506,7 +506,7 @@ int main(int        argc,
                     }
 
                     position = index;
-                    PrintGame(game_data);
+                    PrintGame(game_data, global_win);
                     mes.action = UPDATE_MOVE_ON_OPPONENTS_SIDE;
                     mes.movement = index;
 
@@ -553,7 +553,7 @@ int main(int        argc,
                         AddglobalWin(global_win, position, '0');
                         if(CheckWinglobal(global_win) == true){
                             index = END_OF_GAME;
-                            PrintGame(game_data);
+                            PrintGame(game_data, global_win);
                             PrintMessageAndExitGame("You lost");
                             // ??
                             break;
@@ -562,7 +562,7 @@ int main(int        argc,
 
                     position = index;
                     turn = 1;
-                    PrintGame(game_data);
+                    PrintGame(game_data, global_win);
                     std::cout << "Enter index [1 ... 9] \n";
                 }
             }
@@ -590,7 +590,7 @@ int main(int        argc,
         ++taken_array[PositionforCell(game_data, index)];
 
         turn = 2;
-        PrintGame(game_data);
+        PrintGame(game_data, global_win);
         position = Position(game_data, index);
 
         std::cout << "Enter index [1 ... 9] \n"; 
@@ -648,14 +648,14 @@ int main(int        argc,
                         AddglobalWin(global_win,position, 'x');
                         if (CheckWinglobal(global_win) == true){
                             index = END_OF_GAME;
-                            PrintGame(game_data);
+                            PrintGame(game_data, global_win);
                             PrintMessageAndExitGame("You lost");
                         }
                     }
 
                     position = index;
                     turn = 2;
-                    PrintGame(game_data);
+                    PrintGame(game_data, global_win);
                     std::cout << "Enter index [1 ... 9] \n";
                 }
                 else {
@@ -704,7 +704,7 @@ int main(int        argc,
                         AddglobalWin(global_win, position, '0');
                         if(CheckWinglobal(global_win) == true){
                             index = END_OF_GAME;
-                            PrintGame(game_data);
+                            PrintGame(game_data, global_win);
                             std::cout << "You won \n";
                             std::cout << "Quitting the game\n";
 
@@ -721,7 +721,7 @@ int main(int        argc,
                     }
 
                     position = index;
-                    PrintGame(game_data);
+                    PrintGame(game_data, global_win);
                     mes.action = UPDATE_MOVE_ON_OPPONENTS_SIDE;
                     mes.movement = index;
                     

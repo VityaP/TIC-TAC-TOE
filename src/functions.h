@@ -45,7 +45,7 @@ extern int EnteringTOserver(std::map<int, Player>& players, int id, int type, in
 
 extern void PrintInfo(const std::vector<int>& Array);
 
-extern void PrintGame(const std::vector<char>& Array);
+extern void PrintGame(const std::vector<char>& Array, const std::vector<char>& global_win);
 
 extern int Position(const std::vector<char>& Array, int index);
 

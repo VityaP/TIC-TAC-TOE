@@ -109,9 +109,9 @@ int EnteringTOserver(std::map<int, Player>& players, int id, int type, int statu
 
 
 void PrintInfo(const std::vector<int>& Array){
-    for(size_t n = 0; n <= 54; n = n + 27){
-        for(size_t s = 0; s <= 6; s = s + 3){
-            for(size_t k = 0; k <= 18; k = k + 9){
+    for(size_t n = 0; n < 3 * 27; n = n + 27){
+        for(size_t s = 0; s < 3 * 3; s = s + 3){
+            for(size_t k = 0; k < 3 * 9; k = k + 9){
                 for(size_t i = 1; i <= 3; i++){
                     printf(" %d ", Array[i+k+s+n] );
                 }
@@ -123,10 +123,10 @@ void PrintInfo(const std::vector<int>& Array){
     }
 }
 
-void PrintGame(const std::vector<char>& Array){
-    for(size_t n = 0; n <= 54; n = n + 27){
-        for(size_t s = 0; s <= 6; s = s + 3){
-            for(size_t k = 0; k <= 18; k = k + 9){
+void PrintGame(const std::vector<char>& Array, const std::vector<char>& global_win){
+    for(size_t n = 0; n < 3 * 27; n = n + 27){
+        for(size_t s = 0; s < 3 * 3; s = s + 3){
+            for(size_t k = 0; k < 3 * 9; k = k + 9){
                 for(size_t i = 1; i <= 3; i++){
                     if(Array[i+k+s+n] == 'x'){
                         printf("\x1B[31m x \033[0m");
@@ -134,6 +134,18 @@ void PrintGame(const std::vector<char>& Array){
                     }
                     if(Array[i+k+s+n] == '0'){
                         printf("\x1B[34m 0 \033[0m");
+                        continue;
+                    }
+                    int idx = 1;
+                    while((i+k+s+n) > (9 * idx)){
+                        ++idx;
+                    }
+                    if(global_win[idx] == 'x'){
+                        printf("\x1B[31m . \033[0m");
+                        continue;
+                    }
+                    if(global_win[idx] == '0'){
+                        printf("\x1B[34m . \033[0m");
                         continue;
                     }
                     printf(" %c ", Array[i+k+s+n] );
