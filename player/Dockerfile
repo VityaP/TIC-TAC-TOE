@@ -18,9 +18,8 @@ RUN apt-get install wget -y && \
 
 RUN mkdir -p /opt/src
 WORKDIR /opt/src
-COPY /player /opt/src
-COPY /src /opt/src
-RUN /opt/cmake/bin/cmake .
-RUN make
+COPY . /opt/src
 
 EXPOSE 4040
+
+CMD ./actions.sh
