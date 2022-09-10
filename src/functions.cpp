@@ -16,7 +16,9 @@ int Find(std::map<int, Player>& players, int id){
 
 void Printdatabase(std::map<int, Player>& players){
     printf("|       ID      |    STATUS     |     TYPE      |   ID_OPPONENT |\n");
-    for(const auto& [id, player] : players){
+    for(const auto& tmp : players){
+        auto id = tmp.first;
+        auto player = tmp.second;
         printf("|\t%d\t|\t%d\t|\t%d\t|\t%d\t|\n", player.id, player.status, player.type, player.id_opponent);
     }
 }
@@ -36,7 +38,9 @@ int Connect_player(std::map<int, Player>& players, int id, int type){
     if( (players.count(id) != 0) && (players[id].status == STATUS_IN_GAME) ){
         return 0;
     }
-    for(auto& [player_id, opponent] : players){
+    for(auto& tmp : players){
+        auto player_id = tmp.first;
+        auto opponent = tmp.second;
         if ((opponent.id != id) && (opponent.type != type)){
             if(opponent.status == STATUS_WAIT_FOR_OPPONENT){
                 players[id].status = STATUS_IN_GAME;

@@ -2,6 +2,7 @@
 #define FUNCTIONS_H
 
 #include <map>
+#include <vector>
 #include "message.h"
 
 #define SizeV 81

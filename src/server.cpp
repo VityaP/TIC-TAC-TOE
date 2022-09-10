@@ -7,7 +7,7 @@ The program began writing on January 4, 2019
 Last edit 26 January 2019 at 15: 49
 */
 #include <map>
-#include <string>
+#include <cstring>
 #include <iostream>
 
 #include <unistd.h>
