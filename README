@@ -1,7 +1,0 @@
-From README folder
-
-docker build -t player31 -f ./player/Dockerfile .
-docker build -t server4040 -f ./server/Dockerfile .
-
-docker run player31
-docker run server4040
