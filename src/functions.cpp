@@ -128,6 +128,14 @@ void PrintGame(const std::vector<char>& Array){
         for(size_t s = 0; s <= 6; s = s + 3){
             for(size_t k = 0; k <= 18; k = k + 9){
                 for(size_t i = 1; i <= 3; i++){
+                    if(Array[i+k+s+n] == 'x'){
+                        printf("\x1B[31m x \033[0m");
+                        continue;
+                    }
+                    if(Array[i+k+s+n] == '0'){
+                        printf("\x1B[34m 0 \033[0m");
+                        continue;
+                    }
                     printf(" %c ", Array[i+k+s+n] );
                 }
                 printf("\t");
