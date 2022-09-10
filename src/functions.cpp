@@ -39,8 +39,8 @@ int Connect_player(std::map<int, Player>& players, int id, int type){
         return 0;
     }
     for(auto& tmp : players){
-        auto player_id = tmp.first;
-        auto opponent = tmp.second;
+        auto& player_id = tmp.first;
+        auto& opponent = tmp.second;
         if ((opponent.id != id) && (opponent.type != type)){
             if(opponent.status == STATUS_WAIT_FOR_OPPONENT){
                 players[id].status = STATUS_IN_GAME;
