@@ -1,21 +1,17 @@
-
 /*
-
-This program is the private property of Viktor Petrosyan. 
-Any use without the consent of the author is prohibited. 
-The program began writing on January 4, 2019 
-Last edit 26 January 2019 at 15: 49
+This program is the private property of Victor Petrosyan. 
+Any use without the consent of the author is prohibited.
 */
+
 #include <map>
 #include <cstring>
 #include <iostream>
 
+#include <zmq.h>
 #include <unistd.h>
-#include <stdlib.h>
 #include <signal.h>
 #include <sys/ioctl.h>
 
-#include "zmq.h"
 #include "message.h"
 #include "functions.h"
 

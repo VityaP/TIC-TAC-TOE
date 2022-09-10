@@ -1,3 +1,8 @@
+/*
+This program is the private property of Victor Petrosyan. 
+Any use without the consent of the author is prohibited.
+*/
+
 #ifndef MESSAGE_H
 #define MESSAGE_H
 

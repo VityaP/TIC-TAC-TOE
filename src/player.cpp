@@ -1,7 +1,6 @@
 /*
 This program is the private property of Victor Petrosyan. 
 Any use without the consent of the author is prohibited.
-The program began writing on January 4, 2019
 */
 
 #include <iostream>
@@ -11,15 +10,14 @@ The program began writing on January 4, 2019
 #include <vector>
 #include <algorithm>
 
-#include <stdlib.h>
-#include <unistd.h>
 #include <zmq.h>
-#include <pthread.h>
+#include <unistd.h>
 #include <signal.h>
 #include <sys/ioctl.h>
+#include <pthread.h>
 
-#include "functions.h"
 #include "message.h"
+#include "functions.h"
 
 volatile sig_atomic_t PROGRAM_ABORT_HANDLER = PROGRAM_RUN;
 
@@ -283,6 +281,8 @@ int main(int        argc,
     message mes;
     mes.id                      = std::stoi(argv[1]);
     mes.socket                  = request;
+
+    Colourize painter;
     
     switch(decision){
         case 1:
@@ -393,7 +393,7 @@ int main(int        argc,
     }
 
     PrintInfo(info_data);
-    PrintGame(game_data, global_win);
+    PrintGame(game_data, global_win, painter);
 
     int turn = 1;
 
@@ -419,7 +419,7 @@ int main(int        argc,
         CheckGameCondition(s_win, s_lose);
 
         turn = 2;
-        PrintGame(game_data, global_win);
+        PrintGame(game_data, global_win, painter);
         position = Position(game_data, index);
 
         std::cout << "Opponent turn\n";
@@ -493,7 +493,7 @@ int main(int        argc,
 
                         if(CheckWinglobal(global_win) == true){
                             index = END_OF_GAME;
-                            PrintGame(game_data, global_win);
+                            PrintGame(game_data, global_win, painter);
 
                             mes.action = PLAYER_WIN_GAME;
                             SendAndRecieve(&mes,
@@ -506,7 +506,7 @@ int main(int        argc,
                     }
 
                     position = index;
-                    PrintGame(game_data, global_win);
+                    PrintGame(game_data, global_win, painter);
                     mes.action = UPDATE_MOVE_ON_OPPONENTS_SIDE;
                     mes.movement = index;
 
@@ -553,7 +553,7 @@ int main(int        argc,
                         AddglobalWin(global_win, position, '0');
                         if(CheckWinglobal(global_win) == true){
                             index = END_OF_GAME;
-                            PrintGame(game_data, global_win);
+                            PrintGame(game_data, global_win, painter);
                             PrintMessageAndExitGame("You lost");
                             // ??
                             break;
@@ -562,7 +562,7 @@ int main(int        argc,
 
                     position = index;
                     turn = 1;
-                    PrintGame(game_data, global_win);
+                    PrintGame(game_data, global_win, painter);
                     std::cout << "Enter index [1 ... 9] \n";
                 }
             }
@@ -590,7 +590,7 @@ int main(int        argc,
         ++taken_array[PositionforCell(game_data, index)];
 
         turn = 2;
-        PrintGame(game_data, global_win);
+        PrintGame(game_data, global_win, painter);
         position = Position(game_data, index);
 
         std::cout << "Enter index [1 ... 9] \n"; 
@@ -648,14 +648,14 @@ int main(int        argc,
                         AddglobalWin(global_win,position, 'x');
                         if (CheckWinglobal(global_win) == true){
                             index = END_OF_GAME;
-                            PrintGame(game_data, global_win);
+                            PrintGame(game_data, global_win, painter);
                             PrintMessageAndExitGame("You lost");
                         }
                     }
 
                     position = index;
                     turn = 2;
-                    PrintGame(game_data, global_win);
+                    PrintGame(game_data, global_win, painter);
                     std::cout << "Enter index [1 ... 9] \n";
                 }
                 else {
@@ -704,7 +704,7 @@ int main(int        argc,
                         AddglobalWin(global_win, position, '0');
                         if(CheckWinglobal(global_win) == true){
                             index = END_OF_GAME;
-                            PrintGame(game_data, global_win);
+                            PrintGame(game_data, global_win, painter);
                             std::cout << "You won \n";
                             std::cout << "Quitting the game\n";
 
@@ -721,7 +721,7 @@ int main(int        argc,
                     }
 
                     position = index;
-                    PrintGame(game_data, global_win);
+                    PrintGame(game_data, global_win, painter);
                     mes.action = UPDATE_MOVE_ON_OPPONENTS_SIDE;
                     mes.movement = index;
                     

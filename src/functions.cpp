@@ -1,25 +1,20 @@
-
 /*
-This program is the private property of Viktor Petrosyan. 
-Any use without the consent of the author is prohibited
+This program is the private property of Victor Petrosyan. 
+Any use without the consent of the author is prohibited.
 */
 
-#include <vector>
-#include <stdio.h>
-
 #include "functions.h"
-#include "message.h"
 
 int Find(std::map<int, Player>& players, int id){
     return players.count(id);
 }
 
 void Printdatabase(std::map<int, Player>& players){
-    printf("|       ID      |    STATUS     |     TYPE      |   ID_OPPONENT |\n");
+    std::cout << "|       ID      |    STATUS     |     TYPE      |   ID_OPPONENT |\n";
     for(const auto& tmp : players){
         auto id = tmp.first;
         auto player = tmp.second;
-        printf("|\t%d\t|\t%d\t|\t%d\t|\t%d\t|\n", player.id, player.status, player.type, player.id_opponent);
+        std::cout << "|\t" << player.id << "\t|\t" << player.status << "\t|\t" << player.type << "\t|\t" << player.id_opponent << "\t|\n";
     }
 }
 
@@ -106,34 +101,32 @@ int EnteringTOserver(std::map<int, Player>& players, int id, int type, int statu
 
 
 
-
-
 void PrintInfo(const std::vector<int>& Array){
     for(size_t n = 0; n < 3 * 27; n = n + 27){
         for(size_t s = 0; s < 3 * 3; s = s + 3){
             for(size_t k = 0; k < 3 * 9; k = k + 9){
                 for(size_t i = 1; i <= 3; i++){
-                    printf(" %d ", Array[i+k+s+n] );
+                    std::cout << " " << Array[i+k+s+n] << " ";
                 }
-                printf("\t");
+                std::cout << "\t";
             }
-            printf("\n");
+            std::cout << "\n";
         }
-        printf("\n");
+        std::cout << "\n";
     }
 }
 
-void PrintGame(const std::vector<char>& Array, const std::vector<char>& global_win){
+void PrintGame(const std::vector<char>& Array, const std::vector<char>& global_win, Colourize painter){
     for(size_t n = 0; n < 3 * 27; n = n + 27){
         for(size_t s = 0; s < 3 * 3; s = s + 3){
             for(size_t k = 0; k < 3 * 9; k = k + 9){
                 for(size_t i = 1; i <= 3; i++){
                     if(Array[i+k+s+n] == 'x'){
-                        printf("\x1B[31m x \033[0m");
+                        std::cout << painter.paint("RED", " X ");
                         continue;
                     }
                     if(Array[i+k+s+n] == '0'){
-                        printf("\x1B[34m 0 \033[0m");
+                        std::cout << painter.paint("BLUE", " O ");
                         continue;
                     }
                     int idx = 1;
@@ -141,20 +134,20 @@ void PrintGame(const std::vector<char>& Array, const std::vector<char>& global_w
                         ++idx;
                     }
                     if(global_win[idx] == 'x'){
-                        printf("\x1B[31m . \033[0m");
+                        std::cout << painter.paint("RED", " . ");
                         continue;
                     }
                     if(global_win[idx] == '0'){
-                        printf("\x1B[34m . \033[0m");
+                        std::cout << painter.paint("BLUE", " . ");
                         continue;
                     }
-                    printf(" %c ", Array[i+k+s+n] );
+                    std::cout << painter.paint("ENDC", " . ");
                 }
-                printf("\t");
+                std::cout << "\t";
             }
-            printf("\n");
+            std::cout << "\n";
         }
-        printf("\n");
+        std::cout << "\n";
     }
 }
 
@@ -280,7 +273,7 @@ int Add(std::vector<char>& Array, int lastindex, int userindex, char what, const
 
         if ( taken[lastindex] == 9 ){
 
-            printf("There are no free cells in the block. \nSelect any other index [1 ... 81] which is free\n");
+            std::cout << "There are no free cells in the block. \nSelect any other index [1 ... 81] which is free\n";
 
             return 2;
 
@@ -288,9 +281,9 @@ int Add(std::vector<char>& Array, int lastindex, int userindex, char what, const
 
         if (escape){
 
-            printf("This cell is taken. Choose another cell \n");
+            std::cout << "This cell is taken. Choose another cell \n";
 
-            printf("Enter index [1 ... 9] \n");
+            std::cout << "Enter index [1 ... 9] \n";
 
             return 1;
         }
