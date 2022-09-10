@@ -16,14 +16,10 @@ RUN apt-get install wget -y && \
     /opt/cmake/bin/cmake -version && \
     rm /tmp/* -rf
 
-# Add ZMQ files needed for C++
-RUN cd /tmp && git clone --depth 1 --branch v4.2.1 https://github.com/zeromq/cppzmq.git && cp cppzmq/zmq.hpp /usr/local/include/zmq.hpp
-
-# Setup Hello World example
-RUN mkdir -p /opt/hello-world
-WORKDIR /opt/hello-world
-COPY /server /opt/hello-world
-COPY /src /opt/hello-world
+RUN mkdir -p /opt/src
+WORKDIR /opt/src
+COPY /server /opt/src
+COPY /src /opt/src
 RUN /opt/cmake/bin/cmake .
 RUN make
 
