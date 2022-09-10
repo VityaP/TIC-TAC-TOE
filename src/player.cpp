@@ -122,11 +122,15 @@ void* GetSocket(int         argc,
     }
 
     std::cout << "Starting...\n";
-    int adress;
+    std::string adress;
     std::cout << "Enter the address of server : ";
     std::cin >> adress;
+    std::string txt = "tcp://localhost:" + adress;
+    if (StrToLower(adress) == "docker"){
+        txt = "tcp://zmq_server_cpp:4040";
+    }
 
-    std::string txt = "tcp://localhost:" + std::to_string(adress);
+    
     zmq_connect(request, txt.c_str()); //creating socket
     return request;
 }

@@ -1,0 +1,41 @@
+version: '2'
+services:
+  server:
+    build:
+      context: .
+      dockerfile: docker_server_Dockerfile
+    container_name: zmq_server_cpp
+    image: server_image
+    hostname: zmq_server_cpp
+    ports:
+     - "4040:4040"
+    tty: true
+
+  first_player:
+    build:
+      context: .
+      dockerfile: docker_player_Dockerfile
+    container_name: zmq_first_player
+    image: first_player_image
+    hostname: zmq_first_player
+    tty: true
+    depends_on:
+      - server
+
+  second_player:
+    build:
+      context: .
+      dockerfile: docker_player_Dockerfile
+    container_name: zmq_second_player
+    image: second_player_image
+    hostname: zmq_second_player
+    tty: true
+    depends_on:
+      - server
+
+networks:
+  default:
+    external:
+      name: zmq
+
+# docker network create zmq
