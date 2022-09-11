@@ -81,7 +81,7 @@ int main (int argc, char *argv[]) {
 			switch(mes->action){
 				case REGISTER_PLAYER :
 					mes->lose = NO;
-					if(EnteringTOserver(players, mes->id, TYPE, mes->status)){
+					if(EnteringAtServer(players, mes->id, TYPE, mes->status) == true){
 						mes->playertype = TYPE;
 						if(TYPE == 1){
 							TYPE = 2;
@@ -89,13 +89,13 @@ int main (int argc, char *argv[]) {
 						else{
 							TYPE = 1;
 						}
-						Printdatabase(players);
+						PrintDatabase(players);
 						std::cout << "\n";
 					}
 					else{
 						// ?????
 						mes->win = YES;
-						mes->status = Getstatus(players, mes->id);
+						mes->status = GetStatus(players, mes->id);
 					}
 					break;                                                       
 		
@@ -146,11 +146,11 @@ int main (int argc, char *argv[]) {
 				case FIND_OPPONENT :
 					//To find waiting player to start game player in database
 					mes->lose = NO;
-					Connect_player(players, mes->id, mes->playertype);
+					ConnectPlayer(players, mes->id, mes->playertype);
 					mes->opponentID = OpponentID(players, mes->id);
-					if (mes->opponentID != -1){
+					if(mes->opponentID != -1){
 						mes->status=STATUS_IN_GAME;
-						Printdatabase(players);
+						PrintDatabase(players);
 						std::cout << "\n";
 					}
 					break; 
@@ -163,9 +163,9 @@ int main (int argc, char *argv[]) {
 					++players[mes->opponentID].winRate;
 					players[mes->opponentID].last_move = OPPONENT_LOSE;
 
-					Disconnect_player(players, mes->id);
-					Disconnect_player(players, mes->opponentID);
-					Printdatabase(players);
+					DisconnectPlayer(players, mes->id);
+					DisconnectPlayer(players, mes->opponentID);
+					PrintDatabase(players);
 					std::cout << "\n";
 					break;  
 
@@ -186,7 +186,7 @@ int main (int argc, char *argv[]) {
 
 				case SHOW_DATABASE_ON_SERVERSIDE :
 					//To print DB in server
-					Printdatabase(players);
+					PrintDatabase(players);
 					std::cout << "\n";
 					break;  
 
@@ -197,15 +197,15 @@ int main (int argc, char *argv[]) {
 					++players[mes->opponentID].loseRate;
 					players[mes->opponentID].last_move = OPPONENT_WIN;
 
-					Disconnect_player(players, mes->id);
-					Disconnect_player(players, mes->opponentID);
-					Printdatabase(players);
+					DisconnectPlayer(players, mes->id);
+					DisconnectPlayer(players, mes->opponentID);
+					PrintDatabase(players);
 					std::cout << "\n";
 					break; 
 
 				case DELETE_PLAYER :
 					//To delete player from database
-					if (Delete_players(players, mes->id) ){
+					if (DeletePlayers(players, mes->id) == true){
 						players[mes->id].winRate = 0;
 						players[mes->id].loseRate = 0;
 						players[mes->id].last_move = EMPTY_CELL;

@@ -49,19 +49,19 @@ private:
 
 extern int Find(std::map<int, Player>& players, int id);
 
-extern void Printdatabase(std::map<int, Player>& players);
+extern void PrintDatabase(std::map<int, Player>& players);
 
-extern int Delete_players(std::map<int, Player>& players, int id);
+extern bool DeletePlayers(std::map<int, Player>& players, int id);
 
-extern void Disconnect_player(std::map<int, Player>& players, int id);
+extern void DisconnectPlayer(std::map<int, Player>& players, int id);
 
-extern int Connect_player(std::map<int, Player>& players, int id, int type);
+extern bool ConnectPlayer(std::map<int, Player>& players, int id, int type);
 
 extern int OpponentID(std::map<int, Player>& players, int id);
 
-extern int Getstatus(std::map<int, Player>& players, int id);
+extern int GetStatus(std::map<int, Player>& players, int id);
 
-extern int EnteringTOserver(std::map<int, Player>& players, int id, int type, int status);
+extern bool EnteringAtServer(std::map<int, Player>& players, int id, int type, int status);
 
 
 
@@ -71,21 +71,21 @@ extern void PrintInfo(const std::vector<int>& Array);
 
 extern void PrintGame(const std::vector<char>& Array, const std::vector<char>& global_win, Colourize painter);
 
-extern int Position(const std::vector<char>& Array, int index);
+extern int GetPositionAtLocalCell(const std::vector<char>& Array, int index);
 
-extern int PositionforCell(const std::vector<char>& Array, int index);
+extern int GetPositionAtGlobalCell(const std::vector<char>& Array, int index);
 
-extern int Add(std::vector<char>& Array, int lastindex, int userindex, char what, const std::vector<int>& taken, int escape);
+extern int ProcessAndVerifyMove(std::vector<char>& Array, int lastindex, int userindex, char what, const std::vector<int>& taken, int escape);
 
-extern int Check(const std::vector<char>& Array, int lastindex, int userindex);
+static int CheckLocal(const std::vector<char>& Array, int lastindex, int userindex);
 
-extern int CheckWinlocal(const std::vector<char>& Array, int lastindex);
+extern bool CheckLocalWin(const std::vector<char>& Array, int lastindex);
 
-extern void AddglobalWin(std::vector<char>& Array, int index, char what);
+extern void MarkGlobalWin(std::vector<char>& Array, int index, char what);
 
-extern int CheckGlobal(const std::vector<char>& Array, int index);
+static int CheckGlobal(const std::vector<char>& Array, int index);
 
-extern int CheckWinglobal(const std::vector<char>& Array);
+extern bool CheckGlobalWin(const std::vector<char>& Array);
 
 #endif 
 /*FUNCTIONS_H*/

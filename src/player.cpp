@@ -405,7 +405,7 @@ int main(int        argc,
                                          s_lose);
 
         game_data[index] = 'x';
-        ++taken_array[PositionforCell(game_data, index)];
+        ++taken_array[GetPositionAtGlobalCell(game_data, index)];
 
         mes.action = UPDATE_MOVE_ON_OPPONENTS_SIDE;
         mes.movement = index;
@@ -420,7 +420,7 @@ int main(int        argc,
 
         turn = 2;
         PrintGame(game_data, global_win, painter);
-        position = Position(game_data, index);
+        position = GetPositionAtLocalCell(game_data, index);
 
         std::cout << "Opponent turn\n";
 
@@ -456,7 +456,7 @@ int main(int        argc,
 
                     int x = -1;
                     int escape = 1;
-                    while((x = Add(game_data, position, index, 'x', taken_array, escape)) != 0){
+                    while((x = ProcessAndVerifyMove(game_data, position, index, 'x', taken_array, escape)) != 0){
 
                         if(x == 1){
                             index = VerifyAndGetIndex_9(&mes,
@@ -475,8 +475,8 @@ int main(int        argc,
                                                              s_lose);
                                 if(game_data[index] == '.'){
                                     game_data[index] = 'x';
-                                    position = PositionforCell(game_data, index);
-                                    index = Position(game_data, index);
+                                    position = GetPositionAtGlobalCell(game_data, index);
+                                    index = GetPositionAtLocalCell(game_data, index);
                                     legal_move = true;
                                 }
                                 else{
@@ -488,10 +488,10 @@ int main(int        argc,
 
                     ++taken_array[position];
 
-                    if(CheckWinlocal( game_data, position) == true){
-                        AddglobalWin(global_win,position, 'x');
+                    if(CheckLocalWin( game_data, position) == true){
+                        MarkGlobalWin(global_win,position, 'x');
 
-                        if(CheckWinglobal(global_win) == true){
+                        if(CheckGlobalWin(global_win) == true){
                             index = END_OF_GAME;
                             PrintGame(game_data, global_win, painter);
 
@@ -538,20 +538,20 @@ int main(int        argc,
                     index = s_move;
                     int escape = 1;
                     if((index > 0) && (index < 10)){
-                        Add(game_data, position, index, '0', taken_array, escape);
+                        ProcessAndVerifyMove(game_data, position, index, '0', taken_array, escape);
                     }
                     else{
                         game_data[index] = '0';
-                        position = PositionforCell(game_data, index);
-                        index = Position(game_data, index);
+                        position = GetPositionAtGlobalCell(game_data, index);
+                        index = GetPositionAtLocalCell(game_data, index);
                         escape = 0;
                     }
 
                     ++taken_array[position];
 
-                    if(CheckWinlocal( game_data , position ) == true){
-                        AddglobalWin(global_win, position, '0');
-                        if(CheckWinglobal(global_win) == true){
+                    if(CheckLocalWin( game_data , position ) == true){
+                        MarkGlobalWin(global_win, position, '0');
+                        if(CheckGlobalWin(global_win) == true){
                             index = END_OF_GAME;
                             PrintGame(game_data, global_win, painter);
                             PrintMessageAndExitGame("You lost");
@@ -587,11 +587,11 @@ int main(int        argc,
         std::cout << "\n";
         index = s_move;
         game_data[index] = 'x';
-        ++taken_array[PositionforCell(game_data, index)];
+        ++taken_array[GetPositionAtGlobalCell(game_data, index)];
 
         turn = 2;
         PrintGame(game_data, global_win, painter);
-        position = Position(game_data, index);
+        position = GetPositionAtLocalCell(game_data, index);
 
         std::cout << "Enter index [1 ... 9] \n"; 
 
@@ -634,19 +634,19 @@ int main(int        argc,
                     index = s_move;
                     int escape = 1;
                     if((index > 0) && (index < 10)){
-                        Add(game_data, position, index, 'x', taken_array, escape);
+                        ProcessAndVerifyMove(game_data, position, index, 'x', taken_array, escape);
                     }
                     else{
                         game_data[index] = 'x';
-                        position = PositionforCell(game_data, index);
-                        index = Position(game_data, index);
+                        position = GetPositionAtGlobalCell(game_data, index);
+                        index = GetPositionAtLocalCell(game_data, index);
                         escape = 0;
                     }
 
                     ++taken_array[position];
-                    if(CheckWinlocal(game_data, position) == true){
-                        AddglobalWin(global_win,position, 'x');
-                        if (CheckWinglobal(global_win) == true){
+                    if(CheckLocalWin(game_data, position) == true){
+                        MarkGlobalWin(global_win,position, 'x');
+                        if (CheckGlobalWin(global_win) == true){
                             index = END_OF_GAME;
                             PrintGame(game_data, global_win, painter);
                             PrintMessageAndExitGame("You lost");
@@ -667,7 +667,7 @@ int main(int        argc,
 
                     int x = -1;
                     int escape = 1;
-                    while((x = Add(game_data, position, index, '0', taken_array, escape)) != 0){
+                    while((x = ProcessAndVerifyMove(game_data, position, index, '0', taken_array, escape)) != 0){
                         if(x == 1){
                             index = VerifyAndGetIndex_9(&mes,
                                                         s_move,
@@ -686,8 +686,8 @@ int main(int        argc,
                                                              s_lose);
                                 if(game_data[index] == '.'){
                                     game_data[index] = '0';
-                                    position = PositionforCell(game_data, index);
-                                    index = Position(game_data, index);
+                                    position = GetPositionAtGlobalCell(game_data, index);
+                                    index = GetPositionAtLocalCell(game_data, index);
                                     legal_move = true;
                                     escape = 0;
                                 }
@@ -700,9 +700,9 @@ int main(int        argc,
 
                     ++taken_array[position];
 
-                    if(CheckWinlocal(game_data, position) == true){
-                        AddglobalWin(global_win, position, '0');
-                        if(CheckWinglobal(global_win) == true){
+                    if(CheckLocalWin(game_data, position) == true){
+                        MarkGlobalWin(global_win, position, '0');
+                        if(CheckGlobalWin(global_win) == true){
                             index = END_OF_GAME;
                             PrintGame(game_data, global_win, painter);
                             std::cout << "You won \n";
