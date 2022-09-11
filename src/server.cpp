@@ -83,7 +83,7 @@ int main (int argc, char *argv[]) {
 					mes->lose = NO;
 					if(EnteringTOserver(players, mes->id, TYPE, mes->status)){
 						mes->playertype = TYPE;
-						if ( TYPE == 1 ) {
+						if(TYPE == 1){
 							TYPE = 2;
 						}
 						else{

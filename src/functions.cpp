@@ -19,7 +19,7 @@ void Printdatabase(std::map<int, Player>& players){
 }
 
 int Delete_players(std::map<int, Player>& players, int id){
-    if (players.count(id) != 0) {
+    if(players.count(id) != 0){
         players[id].id = -1;
         players[id].id_opponent = -1;
         players[id].status = STATUS_PLAYER_DELETED;
@@ -30,13 +30,13 @@ int Delete_players(std::map<int, Player>& players, int id){
 }
 
 int Connect_player(std::map<int, Player>& players, int id, int type){
-    if( (players.count(id) != 0) && (players[id].status == STATUS_IN_GAME) ){
+    if((players.count(id) != 0) && (players[id].status == STATUS_IN_GAME)){
         return 0;
     }
     for(auto& tmp : players){
         auto& player_id = tmp.first;
         auto& opponent = tmp.second;
-        if ((opponent.id != id) && (opponent.type != type)){
+        if((opponent.id != id) && (opponent.type != type)){
             if(opponent.status == STATUS_WAIT_FOR_OPPONENT){
                 players[id].status = STATUS_IN_GAME;
                 players[id].id_opponent = opponent.id;
@@ -50,34 +50,34 @@ int Connect_player(std::map<int, Player>& players, int id, int type){
 }
 
 void Disconnect_player(std::map<int, Player>& players, int id){
-    if( players.count(id) != 0 ){
+    if(players.count(id) != 0){
         players[id].status = STATUS_REGISTERED_BUT_NOT_IN_GAME;
     }
 }
 
 int OpponentID(std::map<int, Player>& players, int id){
-    if( (players.count(id) != 0) && (players[id].status == STATUS_IN_GAME) ){
+    if((players.count(id) != 0) && (players[id].status == STATUS_IN_GAME)){
         return players[id].id_opponent;
     }
     return -1;
 }
 
 int Getstatus(std::map<int, Player>& players, int id){
-    if( players.count(id) != 0 ){
+    if(players.count(id) != 0){
         return players[id].status;
-    }    
+    }
     return -1;
 }
 
 int EnteringTOserver(std::map<int, Player>& players, int id, int type, int status){
-    if( players.count(id) != 0 ){
+    if(players.count(id) != 0){
         auto& player_ref = players[id];
-        if( player_ref.status != STATUS_REGISTERED_BUT_NOT_IN_GAME){
+        if(player_ref.status != STATUS_REGISTERED_BUT_NOT_IN_GAME){
             return 0;
         }
         player_ref.type = type;
         player_ref.id_opponent = 0;
-        if ( status == STATUS_PLAYER_WITH_FRIEND) {
+        if(status == STATUS_PLAYER_WITH_FRIEND){
             player_ref.status = STATUS_IN_GAME;
         }
         else{
@@ -88,7 +88,7 @@ int EnteringTOserver(std::map<int, Player>& players, int id, int type, int statu
         Player tmp;
         tmp.id = id;
         tmp.type = type;
-        if ( status == STATUS_PLAYER_WITH_FRIEND) {
+        if(status == STATUS_PLAYER_WITH_FRIEND){
             tmp.status = STATUS_IN_GAME;
         }
         else{
@@ -152,12 +152,12 @@ void PrintGame(const std::vector<char>& Array, const std::vector<char>& global_w
 }
 
 int Position(const std::vector<char>& Array, int index){
-    for(size_t n = 0; n <= 54; n = n + 27){
-        for(size_t s = 0; s <= 6; s = s + 3){
-            for(size_t k = 0; k <= 18; k = k + 9){
+    for(size_t n = 0; n < 3 * 27; n = n + 27){
+        for(size_t s = 0; s < 3 * 3; s = s + 3){
+            for(size_t k = 0; k < 3 * 9; k = k + 9){
                 for(size_t i = 1; i <= 3; i++){
-                    if ( i+k+s+n == index ){
-                        return ( i + s );
+                    if((i + k + s + n) == index){
+                        return (i + s);
                     }
                 }
             }
@@ -172,33 +172,7 @@ int PositionforCell(const std::vector<char>& Array, int index){
             for(size_t k = 0; k <= 18; k = k + 9){
                 for(size_t i = 1; i <= 3; i++){
                     if ( i+k+s+n == index ){
-                        if( k == 0 && n == 0){
-                            return 1;
-                        }
-                        if( k == 9 && n == 0){
-                            return 2;
-                        }
-                        if( k == 18 && n == 0){
-                            return 3;
-                        }
-                        if( k == 0 && n == 27){
-                            return 4;
-                        }
-                        if( k == 9 && n == 27){
-                            return 5;
-                        }
-                        if( k == 18 && n == 27){
-                            return 6;
-                        }
-                        if( k == 0 && n == 54){
-                            return 7;
-                        }
-                        if( k == 9 && n == 54){
-                            return 8;
-                        }
-                        if( k == 18 && n == 54){
-                            return 9;
-                        }
+                        return (3 * (n / 27) + (k / 9) + 1);
                     }
                 }
             }
@@ -208,206 +182,36 @@ int PositionforCell(const std::vector<char>& Array, int index){
 }
 
 int Add(std::vector<char>& Array, int lastindex, int userindex, char what, const std::vector<int>& taken, int escape){
+    int n = 27 * ((lastindex - 1) / 3);
+    int k = 9 * ((lastindex - 1) % 3);
 
-    int k , n;
-
-    switch (lastindex){
-
-        case 1:
-            k = 0;
-            n = 0;
-            break;
-
-        case 2:
-            k = 9;
-            n = 0;
-            break;
-
-        case 3:
-            k = 18;
-            n = 0;
-            break;
-
-        case 4:
-            k = 0;
-            n = 27;
-            break;
-        
-        case 5:
-            k = 9;
-            n = 27;
-            break;
-
-        case 6:
-            k = 18;
-            n = 27;
-            break;
-
-        case 7:
-            k = 0;
-            n = 54;
-            break;
-
-        case 8:
-            k = 9;
-            n = 54;
-            break;
-
-        case 9:
-            k = 18;
-            n = 54;
-            break;
-    
-        default:
-            break;
-    }
-
-    if(Array[userindex+k+n] == '.'){
-
+    if(Array[userindex + k + n] == '.'){
         Array[userindex+k+n] = what;
-
         return 0;
-    
     }
     else{
-
-        if ( taken[lastindex] == 9 ){
-
-            std::cout << "There are no free cells in the block. \nSelect any other index [1 ... 81] which is free\n";
-
+        if(taken[lastindex] == 9){
+            std::cout << "There are no free cells in the block. \n";
+            std::cout << "Select any other index [1 ... 81] which is free\n";
             return 2;
-
         }
-
-        if (escape){
-
+        if(escape != 0){
             std::cout << "This cell is taken. Choose another cell \n";
-
             std::cout << "Enter index [1 ... 9] \n";
-
             return 1;
         }
         else{
-
             return 0;
-
         }
-
     }
-
 }
 
 int Check(const std::vector<char>& Array, int lastindex, int userindex){
-
-    int i , s;
-
-    int k , n;
-
-    switch (userindex){
-
-        case 1:
-            
-            i = 1;
-            s = 0;
-            break;
-
-        case 2:
-            i = 2;
-            s = 0;
-            break;
-
-        case 3:
-            i = 3;
-            s = 0;
-            break;
-
-        case 4:
-            i = 1;
-            s = 3;
-            break;
-        
-        case 5:
-            i = 2;
-            s = 3;
-            break;
-
-        case 6:
-            i = 3;
-            s = 3;
-            break;
-
-        case 7:
-            i = 1;
-            s = 6;
-            break;
-
-        case 8:
-            i = 2;
-            s = 6;
-            break;
-
-        case 9:
-            i = 3;
-            s = 6;
-            break;
-    
-        default:
-            break;
-    }
-
-    switch (lastindex){
-
-        case 1:
-            k = 0;
-            n = 0;
-            break;
-
-        case 2:
-            k = 9;
-            n = 0;
-            break;
-
-        case 3:
-            k = 18;
-            n = 0;
-            break;
-
-        case 4:
-            k = 0;
-            n = 27;
-            break;
-        
-        case 5:
-            k = 9;
-            n = 27;
-            break;
-
-        case 6:
-            k = 18;
-            n = 27;
-            break;
-
-        case 7:
-            k = 0;
-            n = 54;
-            break;
-
-        case 8:
-            k = 9;
-            n = 54;
-            break;
-
-        case 9:
-            k = 18;
-            n = 54;
-            break;
-    
-        default:
-            break;
-    }
-
-    return Array[i+k+s+n] ;
-
+    int i = 1 + ((userindex - 1) % 3);
+    int k = 9 * ((lastindex - 1) % 3);
+    int s = 3 * ((userindex - 1) / 3);
+    int n = 27 * ((lastindex - 1) / 3);
+    return Array[i + k + s + n];
 }
 
 int CheckWinlocal(const std::vector<char>& Array, int lastindex){
@@ -424,313 +228,180 @@ int CheckWinlocal(const std::vector<char>& Array, int lastindex){
     int u8 = 8;
     int u9 = 9;
 
-    if (Check ( Array ,lastindex , u1 ) != '.'){
-
-        if  ( Check ( Array ,lastindex , u1 ) == Check ( Array ,lastindex , u2 ) ) {
-
+    if(Check(Array, lastindex, u1) != '.'){
+        if(Check(Array, lastindex, u1) == Check(Array, lastindex, u2)){
             OK = 1;
-        
         }
-
-        if  ( Check ( Array ,lastindex , u2 ) == Check ( Array ,lastindex , u3 ) ) {
-
-            if (OK == 1){
-
+        if(Check(Array, lastindex, u2) == Check(Array, lastindex, u3)){
+            if(OK == 1){
                 return 1;
-            
             }
             else{
-
                 OK = 0;
-
             }
-        
         }
         else{
-
             OK = 0;
-
         }
     }
     else{
-
         OK = 0;
-
     }
 
-
-    if (Check ( Array ,lastindex , u4 ) != '.'){
-
-        if  ( Check ( Array ,lastindex , u4 ) == Check ( Array ,lastindex , u5 ) ) {
-
+    if(Check(Array, lastindex, u4) != '.'){
+        if(Check(Array, lastindex, u4) == Check(Array, lastindex, u5)){
             OK = 1;
-        
         }
-
-        if  ( Check ( Array ,lastindex , u5 ) == Check ( Array ,lastindex , u6 ) ) {
-
-            if (OK == 1){
-
+        if(Check(Array, lastindex, u5) == Check(Array, lastindex, u6)){
+            if(OK == 1){
                 return 1;
-            
             }
             else{
-
                 OK = 0;
-                
             }
-        
         }
         else{
-
             OK = 0;
-
         }
     }
     else{
-
         OK = 0;
-
     }
 
-
-    if (Check ( Array ,lastindex , u7 ) != '.'){
-
-        if  ( Check ( Array ,lastindex , u7 ) == Check ( Array ,lastindex , u8 ) ) {
-
+    if(Check(Array, lastindex, u7) != '.'){
+        if(Check(Array, lastindex, u7) == Check(Array, lastindex, u8)){
             OK = 1;
-        
         }
-
-        if  ( Check ( Array ,lastindex , u8 ) == Check ( Array ,lastindex , u9 ) ) {
-
-            if (OK == 1){
-
+        if(Check(Array, lastindex, u8) == Check(Array, lastindex, u9)){
+            if(OK == 1){
                 return 1;
-            
             }
             else{
-
                 OK = 0;
-                
             }
-        
         }
         else{
-
             OK = 0;
-
         }
-
     }
     else{
-
         OK = 0;
-
     }
 
-
-    if (Check ( Array ,lastindex , u1 ) != '.'){
-
-        if  ( Check ( Array ,lastindex , u1 ) == Check ( Array ,lastindex , u4 ) ) {
-
+    if(Check(Array, lastindex, u1) != '.'){
+        if(Check(Array, lastindex, u1) == Check(Array, lastindex, u4)){
             OK = 1;
-        
         }
-
-        if  ( Check ( Array ,lastindex , u4 ) == Check ( Array ,lastindex , u7 ) ) {
-
-            if (OK == 1){
-
+        if(Check(Array, lastindex, u4) == Check(Array, lastindex, u7)){
+            if(OK == 1){
                 return 1;
-            
             }
             else{
-
                 OK = 0;
-                
             }
-        
         }
         else{
-
             OK = 0;
-
         }
-
     }
     else{
-
         OK = 0;
-
     }
 
-
-    if (Check ( Array ,lastindex , u2 ) != '.'){
-
-        if  ( Check ( Array ,lastindex , u2 ) == Check ( Array ,lastindex , u5 ) ) {
-
+    if(Check(Array, lastindex, u2) != '.'){
+        if(Check(Array, lastindex, u2) == Check(Array, lastindex, u5)){
             OK = 1;
-        
         }
-
-        if  ( Check ( Array ,lastindex , u5 ) == Check ( Array ,lastindex , u8 ) ) {
-
-            if (OK == 1){
-
+        if(Check(Array, lastindex, u5) == Check(Array, lastindex, u8)){
+            if(OK == 1){
                 return 1;
-            
             }
             else{
-
                 OK = 0;
-                
             }
-        
         }
         else{
-
             OK = 0;
-
         }
-
     }
     else{
-
         OK = 0;
-
     }
 
-
-    if (Check ( Array ,lastindex , u3 ) != '.'){
-
-        if  ( Check ( Array ,lastindex , u3 ) == Check ( Array ,lastindex , u6 ) ) {
-
+    if(Check(Array, lastindex, u3) != '.'){
+        if(Check(Array, lastindex, u3) == Check(Array, lastindex, u6)){
             OK = 1;
-        
         }
-
-        if  ( Check ( Array ,lastindex , u6 ) == Check ( Array ,lastindex , u9 ) ) {
-
-            if (OK == 1){
-
+        if(Check(Array, lastindex, u6) == Check(Array, lastindex, u9)){
+            if(OK == 1){
                 return 1;
-            
             }
             else{
-
                 OK = 0;
-                
             }
-        
         }
         else{
-
             OK = 0;
-
         }
-
     }
     else{
-
         OK = 0;
-
     }
 
-
-    if (Check ( Array ,lastindex , u1 ) != '.'){
-
-        if  ( Check ( Array ,lastindex , u1 ) == Check ( Array ,lastindex , u5 ) ) {
-
+    if(Check(Array, lastindex, u1) != '.'){
+        if(Check(Array, lastindex, u1) == Check(Array, lastindex, u5)){
             OK = 1;
-        
         }
-
-        if  ( Check ( Array ,lastindex , u5 ) == Check ( Array ,lastindex , u9 ) ) {
-
-            if (OK == 1){
-
+        if(Check(Array, lastindex, u5) == Check(Array, lastindex, u9)){
+            if(OK == 1){
                 return 1;
-            
             }
             else{
-
                 OK = 0;
-                
             }
-        
         }
         else{
-
             OK = 0;
-
         }
-
     }
     else{
-
         OK = 0;
-
     }
 
-
-    if (Check ( Array ,lastindex , u3 ) != '.'){
-
-        if  ( Check ( Array ,lastindex , u3 ) == Check ( Array ,lastindex , u5 ) ) {
-
+    if(Check(Array, lastindex, u3) != '.'){
+        if(Check(Array, lastindex, u3) == Check(Array, lastindex, u5)){
             OK = 1;
-        
         }
-
-        if  ( Check ( Array ,lastindex , u5 ) == Check ( Array ,lastindex , u7 ) ) {
-
-            if (OK == 1){
-
+        if(Check(Array, lastindex, u5) == Check(Array, lastindex, u7)){
+            if(OK == 1){
                 return 1;
-            
             }
             else{
-
                 OK = 0;
-                
             }
-        
         }
         else{
-
             OK = 0;
-
         }
-
     }
     else{
-
         OK = 0;
-
     }
 
     return 0;
-
 }
 
 void AddglobalWin(std::vector<char>& Array, int index, char what){
-
     if(Array[index] == '.'){
-
         Array[index] = what;
-
     }
-    
 }
 
 int CheckGlobal(const std::vector<char>& Array, int index){
-
     return Array[index];
-
 }
 
 int CheckWinglobal(const std::vector<char>& Array){
-
     int OK = 0;
 
     int u1 = 1;
@@ -743,291 +414,166 @@ int CheckWinglobal(const std::vector<char>& Array){
     int u8 = 8;
     int u9 = 9;
 
-    if (CheckGlobal ( Array , u1 ) != '.'){
-
-        if  ( CheckGlobal ( Array , u1 ) == CheckGlobal ( Array , u2 ) ) {
-
+    if(CheckGlobal(Array, u1) != '.'){
+        if(CheckGlobal(Array, u1) == CheckGlobal(Array, u2)){
             OK = 1;
-        
         }
-
-        if  ( CheckGlobal ( Array , u2 ) == CheckGlobal ( Array , u3 ) ) {
-
-            if (OK == 1){
-
+        if(CheckGlobal(Array, u2) == CheckGlobal(Array, u3)){
+            if(OK == 1){
                 return 1;
-            
             }
             else{
-
                 OK = 0;
-
             }
-        
         }
         else{
-
             OK = 0;
-
         }
     }
     else{
-
         OK = 0;
-
     }
 
-
-    if (CheckGlobal ( Array , u4 ) != '.'){
-
-        if  ( CheckGlobal ( Array , u4 ) == CheckGlobal ( Array , u5 ) ) {
-
+    if(CheckGlobal(Array, u4) != '.'){
+        if(CheckGlobal(Array, u4) == CheckGlobal(Array, u5)){
             OK = 1;
-        
         }
-
-        if  ( CheckGlobal ( Array , u5 ) == CheckGlobal ( Array , u6 ) ) {
-
-            if (OK == 1){
-
+        if(CheckGlobal(Array, u5) == CheckGlobal(Array, u6)){
+            if(OK == 1){
                 return 1;
-            
             }
             else{
-
                 OK = 0;
-                
             }
-        
         }
         else{
-
             OK = 0;
-
         }
     }
     else{
-
         OK = 0;
-
     }
 
-
-    if (CheckGlobal ( Array , u7 ) != '.'){
-
-        if  ( CheckGlobal ( Array , u7 ) == CheckGlobal ( Array , u8 ) ) {
-
+    if(CheckGlobal(Array, u7) != '.'){
+        if(CheckGlobal(Array, u7) == CheckGlobal(Array, u8)){
             OK = 1;
-        
         }
-
-        if  ( CheckGlobal ( Array , u8 ) == CheckGlobal ( Array , u9 ) ) {
-
-            if (OK == 1){
-
+        if(CheckGlobal(Array, u8) == CheckGlobal(Array, u9)){
+            if(OK == 1){
                 return 1;
-            
             }
             else{
-
                 OK = 0;
-                
             }
-        
         }
         else{
-
             OK = 0;
-
         }
-
     }
     else{
-
         OK = 0;
-
     }
 
-
-    if (CheckGlobal ( Array , u1 ) != '.'){
-
-        if  ( CheckGlobal ( Array , u1 ) == CheckGlobal ( Array , u4 ) ) {
-
+    if(CheckGlobal(Array, u1) != '.'){
+        if(CheckGlobal(Array, u1) == CheckGlobal(Array, u4)){
             OK = 1;
-        
         }
-
-        if  ( CheckGlobal ( Array , u4 ) == CheckGlobal ( Array , u7 ) ) {
-
-            if (OK == 1){
-
-                return 1;
-            
+        if(CheckGlobal(Array, u4) == CheckGlobal(Array, u7)){
+            if(OK == 1){
+                return 1;   
             }
             else{
-
                 OK = 0;
-                
             }
-        
         }
         else{
-
             OK = 0;
-
         }
-
     }
     else{
-
         OK = 0;
-
     }
 
-
-    if (CheckGlobal ( Array , u2 ) != '.'){
-
-        if  ( CheckGlobal ( Array , u2 ) == CheckGlobal ( Array , u5 ) ) {
-
+    if(CheckGlobal(Array, u2) != '.'){
+        if(CheckGlobal(Array, u2) == CheckGlobal(Array, u5)){
             OK = 1;
-        
         }
-
-        if  ( CheckGlobal ( Array , u5 ) == CheckGlobal ( Array , u8 ) ) {
-
-            if (OK == 1){
-
+        if(CheckGlobal(Array, u5) == CheckGlobal(Array, u8)){
+            if(OK == 1){
                 return 1;
-            
             }
             else{
-
                 OK = 0;
-                
             }
-        
         }
         else{
-
             OK = 0;
-
         }
-
     }
     else{
-
         OK = 0;
-
     }
 
 
-    if (CheckGlobal ( Array , u3 ) != '.'){
-
-        if  ( CheckGlobal ( Array , u3 ) == CheckGlobal ( Array , u6 ) ) {
-
-            OK = 1;
-        
+    if(CheckGlobal(Array, u3) != '.'){
+        if(CheckGlobal(Array, u3) == CheckGlobal(Array, u6)){
+            OK = 1;        
         }
-
-        if  ( CheckGlobal ( Array , u6 ) == CheckGlobal ( Array , u9 ) ) {
-
-            if (OK == 1){
-
+        if(CheckGlobal(Array, u6) == CheckGlobal(Array, u9)){
+            if(OK == 1){
                 return 1;
-            
             }
             else{
-
                 OK = 0;
-                
             }
-        
         }
         else{
-
             OK = 0;
-
         }
-
     }
     else{
-
         OK = 0;
-
     }
 
-
-    if (CheckGlobal ( Array , u1 ) != '.'){
-
-        if  ( CheckGlobal ( Array , u1 ) == CheckGlobal ( Array , u5 ) ) {
-
+    if(CheckGlobal(Array, u1) != '.'){
+        if(CheckGlobal(Array, u1) == CheckGlobal(Array, u5)){
             OK = 1;
-        
         }
-
-        if  ( CheckGlobal ( Array , u5 ) == CheckGlobal ( Array , u9 ) ) {
-
-            if (OK == 1){
-
+        if(CheckGlobal(Array, u5) == CheckGlobal(Array, u9)){
+            if(OK == 1){
                 return 1;
-            
             }
             else{
-
                 OK = 0;
-                
             }
-        
         }
         else{
-
             OK = 0;
-
         }
-
     }
     else{
-
         OK = 0;
-
     }
 
-
-    if (CheckGlobal ( Array , u3 ) != '.'){
-
-        if  ( CheckGlobal ( Array , u3 ) == CheckGlobal ( Array , u5 ) ) {
-
+    if(CheckGlobal(Array, u3) != '.'){
+        if(CheckGlobal(Array, u3) == CheckGlobal(Array, u5)){
             OK = 1;
-        
         }
-
-        if  ( CheckGlobal ( Array , u5 ) == CheckGlobal ( Array , u7 ) ) {
-
-            if (OK == 1){
-
+        if(CheckGlobal(Array, u5) == CheckGlobal(Array, u7)){
+            if(OK == 1){
                 return 1;
-            
             }
             else{
-
                 OK = 0;
-                
             }
-        
         }
         else{
-
             OK = 0;
-
         }
-
     }
     else{
-
         OK = 0;
-
     }
 
     return 0;
-
 }
