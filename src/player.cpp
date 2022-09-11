@@ -251,7 +251,7 @@ void ChooseAndVerifyOpponetsID(message*    mes,
         }
 
         mes->opponentID = std::stoi(string_player);
-        if(mes->opponentID > 0){
+        if(mes->opponentID != NO_OPPONENT){
             correct_input = true;
         }
     }
@@ -351,8 +351,7 @@ int main(int        argc,
             exit(0);
             break;
     }
-
-    if (s_status == STATUS_IN_GAME){
+    if(s_lose == YES){
         PrintMessageAndExitGame("Sorry, this ID is in use now, choose another one");
     }
 

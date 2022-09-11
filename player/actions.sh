@@ -2,7 +2,7 @@
 
 until cd /opt/tmp
 do
-    echo "Waiting for docker-compose"
+    echo "Waiting for docker-compose __Player actions.sh script__"
 done
 cd /opt/src
 cp /opt/tmp/* /opt/src

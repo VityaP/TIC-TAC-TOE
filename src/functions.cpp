@@ -5,32 +5,37 @@ Any use without the consent of the author is prohibited.
 
 #include "functions.h"
 
-int Find(std::map<int, Player>& players, int id){
+bool Find(const std::map<int, Player>& players, int id){
     return players.count(id);
 }
 
 void PrintDatabase(std::map<int, Player>& players){
-    std::cout << "|       ID      |    STATUS     |     TYPE      |   ID_OPPONENT |\n";
+    std::cout << "|" << std::setw(15) << "PLAYER_ID"
+              << "|" << std::setw(10) << "TYPE"
+              << "|" << std::setw(15) << "OPPONENT_ID"
+              << "|" << std::setw(40) << "STATUS"
+              << "|\n";
     for(const auto& tmp : players){
         auto id = tmp.first;
         auto player = tmp.second;
-        std::cout << "|\t" << player.id << "\t|\t" << player.status << "\t|\t" << player.type << "\t|\t" << player.id_opponent << "\t|\n";
+        std::cout << "|" << std::setw(15) << player.id
+                  << "|" << std::setw(10) << player.type
+                  << "|" << std::setw(15) << player.id_opponent 
+                  << "|" << std::setw(40) << player.status
+                  << "|\n";
     }
 }
 
 bool DeletePlayers(std::map<int, Player>& players, int id){
-    if(players.count(id) != 0){
-        players[id].id = -1;
-        players[id].id_opponent = -1;
-        players[id].status = STATUS_PLAYER_DELETED;
-        players[id].type = -1;
+    if(Find(players, id) == true){
+        players.erase(id);
         return true;
     }
     return false;
 }
 
 bool ConnectPlayer(std::map<int, Player>& players, int id, int type){
-    if((players.count(id) != 0) && (players[id].status == STATUS_IN_GAME)){
+    if((Find(players, id) == true) && (players[id].status == STATUS_IN_GAME)){
         return false;
     }
     for(auto& tmp : players){
@@ -50,27 +55,27 @@ bool ConnectPlayer(std::map<int, Player>& players, int id, int type){
 }
 
 void DisconnectPlayer(std::map<int, Player>& players, int id){
-    if(players.count(id) != 0){
+    if(Find(players, id) == true){
         players[id].status = STATUS_REGISTERED_BUT_NOT_IN_GAME;
     }
 }
 
 int OpponentID(std::map<int, Player>& players, int id){
-    if((players.count(id) != 0) && (players[id].status == STATUS_IN_GAME)){
+    if((Find(players, id) == true) && (players[id].status == STATUS_IN_GAME)){
         return players[id].id_opponent;
     }
-    return -1;
+    return NO_OPPONENT;
 }
 
 int GetStatus(std::map<int, Player>& players, int id){
-    if(players.count(id) != 0){
+    if(Find(players, id) == true){
         return players[id].status;
     }
     return -1;
 }
 
 bool EnteringAtServer(std::map<int, Player>& players, int id, int type, int status){
-    if(players.count(id) != 0){
+    if(Find(players, id) == true){
         auto& player_ref = players[id];
         if(player_ref.status != STATUS_REGISTERED_BUT_NOT_IN_GAME){
             return false;

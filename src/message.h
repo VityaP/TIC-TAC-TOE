@@ -51,4 +51,6 @@ struct message{
 
 #define END_OF_GAME                        100
 
+#define NO_OPPONENT                         -1
+
 #endif

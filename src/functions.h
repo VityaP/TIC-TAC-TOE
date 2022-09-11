@@ -11,6 +11,7 @@ Any use without the consent of the author is prohibited.
 #include <cstring>
 #include <iostream>
 #include <utility>
+#include <iomanip>
 #include "message.h"
 
 #define SizeV 81
@@ -47,7 +48,7 @@ private:
     std::map<std::string, std::string> colours;
 };
 
-extern int Find(std::map<int, Player>& players, int id);
+extern bool Find(const std::map<int, Player>& players, int id);
 
 extern void PrintDatabase(std::map<int, Player>& players);
 
