@@ -1,5 +1,5 @@
 /*
-This program is the private property of Victor Petrosyan. 
+This program is the private property of Victor Petrosyan.
 Any use without the consent of the author is prohibited.
 */
 
@@ -14,6 +14,8 @@ Any use without the consent of the author is prohibited.
 
 #include "message.h"
 #include "functions.h"
+
+// #define DEBUG
 
 
 volatile sig_atomic_t SERVER_ABORT_HANDLER = 0;
@@ -33,7 +35,7 @@ void ServerGracefulQuit(int tmp){
 	SERVER_ABORT_HANDLER = PROGRAM_STOP;
 }
 
-void* GetSocket(int         argc, 
+void* GetSocket(int         argc,
                 char*       argv[]){
 	void* context = zmq_ctx_new();
 	if(context == NULL){
@@ -73,7 +75,7 @@ void LogAboutFraud(int whoDoesNotExist, int hackerID, int switchCase){
 	std::cout << "-----------------------------------------------------------------------------\n\n";
 }
 
-int main (int argc, char *argv[]) {
+int main(int argc, char *argv[]){
 	zmq_msg_t reply;
 	int TYPE = 1;
 
@@ -99,6 +101,11 @@ int main (int argc, char *argv[]) {
 
 			switch(mes->action){
 				case REGISTER_PLAYER :
+					#if DEBUG
+						PrintDatabase(players);
+						std::cout << "\n";
+					#endif
+
 					if(mes->id <= 0){
 						std::cout << "-----------------------------------------------------------------------------\n";
 						std::cout << "ID should be > 0, but got: " << mes->id << "\n";
@@ -107,21 +114,25 @@ int main (int argc, char *argv[]) {
 						mes->lose = YES;
 						break;
 					}
-					
+
 					if(EnteringAtServer(players, mes->id, TYPE, mes->status) == true){
 						mes->playertype = TYPE;
 						TYPE = SwitchType(TYPE);
 						PrintDatabase(players);
-						std::cout << "\n";
 					}
 					else{
 						mes->lose = YES;
 						// player already exist and online
 						// mes->status = GetStatus(players, mes->id);
 					}
-					break;                                                       
+					break;
 
 				case UPDATE_MOVE_ON_OPPONENTS_SIDE :
+					#if DEBUG
+						PrintDatabase(players);
+						std::cout << "\n";
+					#endif
+
 					//To write move of current player in array of his opponent
 					if(Find(players, mes->id) == false){
 						LogAboutFraud(mes->id, mes->id, mes->action);
@@ -146,16 +157,21 @@ int main (int argc, char *argv[]) {
 					break;
 
 				case CHECK_IF_OPPONENT_MAKE_MOVE :
+					#if DEBUG
+						PrintDatabase(players);
+						std::cout << "\n";
+					#endif
+
 					// To check if another player make move and get move value from movmentArray
 					if(Find(players, mes->id)){
-						if ((players[mes->id].last_move != OPPONENT_LOSE) && (players[mes->id].last_move != OPPONENT_WIN)){
+						if((players[mes->id].last_move != OPPONENT_LOSE) && (players[mes->id].last_move != OPPONENT_WIN)){
 							mes->win = NO;
 							mes->movement = players[mes->id].last_move;
 							if(players[mes->id].last_move != EMPTY_CELL){
 								players[mes->id].last_move = EMPTY_CELL;
 							}
 						}
-						else {
+						else{
 							mes->movement = players[mes->id].last_move;
 							if(players[mes->id].last_move == OPPONENT_LOSE){
 								mes->win = YES;
@@ -171,9 +187,14 @@ int main (int argc, char *argv[]) {
 						mes->lose = YES;
 						break;
 					}
-					break;            
+					break;
 
 				case FIND_OPPONENT :
+					#if DEBUG
+						PrintDatabase(players);
+						std::cout << "\n";
+					#endif
+
 					//To find waiting player to start game player in database
 					if(Find(players, mes->id) == false){
 						LogAboutFraud(mes->id, mes->id, mes->action);
@@ -186,11 +207,15 @@ int main (int argc, char *argv[]) {
 					if(mes->opponentID != NO_OPPONENT){
 						mes->status = STATUS_IN_GAME;
 						PrintDatabase(players);
-						std::cout << "\n";
 					}
-					break; 
+					break;
 
 				case EXIT_GAME_EARLY :
+					#if DEBUG
+						PrintDatabase(players);
+						std::cout << "\n";
+					#endif
+
 					//If you quit the game till it end
 					if(Find(players, mes->id) == false){
 						LogAboutFraud(mes->id, mes->id, mes->action);
@@ -207,10 +232,14 @@ int main (int argc, char *argv[]) {
 					DisconnectPlayer(players, mes->id);
 					DisconnectPlayer(players, mes->opponentID);
 					PrintDatabase(players);
-					std::cout << "\n";
-					break;  
+					break;
 
 				case SHOW_PERSONAL_STATISTICS :
+					#if DEBUG
+						PrintDatabase(players);
+						std::cout << "\n";
+					#endif
+
 					//To print stat of current player
 					if(Find(players, mes->id)){
 						mes->winstat = players[mes->id].winRate;
@@ -221,26 +250,45 @@ int main (int argc, char *argv[]) {
 						mes->lose = YES;
 						break;
 					}
-					break;   
+					break;
 
 				case SHOW_GENERAL_STATISTICS :
+					#if DEBUG
+						PrintDatabase(players);
+						std::cout << "\n";
+					#endif
+
 					//To print stats of all players in server
-					break;   
+					std::cout << "|" << std::setw(15) << "PLAYER_ID"
+							  << "|" << std::setw(10) << "Win"
+							  << "|" << std::setw(10) << "Lose"
+							  << "|\n";
+					for(const auto& player: players){
+						std::cout << "|" << std::setw(15) << player.second.id
+								  << "|" << std::setw(10) << player.second.winRate
+								  << "|" << std::setw(10) << player.second.loseRate
+								  << "|\n";
+					}
+					break;
 
 				case SHOW_DATABASE_ON_SERVERSIDE :
 					//To print DB in server
 					if(Find(players, mes->id)){
 						PrintDatabase(players);
-						std::cout << "\n";
 					}
 					else{
 						LogAboutFraud(mes->id, mes->id, mes->action);
 						mes->lose = YES;
 						break;
 					}
-					break;  
+					break;
 
 				case PLAYER_WIN_GAME :
+					#if DEBUG
+						PrintDatabase(players);
+						std::cout << "\n";
+					#endif
+
 					//If you win the game
 					if(Find(players, mes->id)){
 						mes->opponentID = OpponentID(players, mes->id);
@@ -252,7 +300,6 @@ int main (int argc, char *argv[]) {
 						DisconnectPlayer(players, mes->id);
 						DisconnectPlayer(players, mes->opponentID);
 						PrintDatabase(players);
-						std::cout << "\n";
 					}
 					else{
 						LogAboutFraud(mes->id, mes->id, mes->action);
@@ -260,11 +307,11 @@ int main (int argc, char *argv[]) {
 						break;
 					}
 					
-					break; 
+					break;
 
 				case DELETE_PLAYER :
 					//To delete player from database
-					if (DeletePlayers(players, mes->id) != true){
+					if(DeletePlayers(players, mes->id) != true){
 						LogAboutFraud(mes->id, mes->id, mes->action);
 						mes->lose = YES;
 						break;

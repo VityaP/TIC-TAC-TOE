@@ -1,5 +1,5 @@
 /*
-This program is the private property of Victor Petrosyan. 
+This program is the private property of Victor Petrosyan.
 Any use without the consent of the author is prohibited.
 */
 
@@ -19,20 +19,13 @@ Any use without the consent of the author is prohibited.
 #include "message.h"
 #include "functions.h"
 
-volatile sig_atomic_t PROGRAM_ABORT_HANDLER = PROGRAM_RUN;
+message mes;
 
 std::string StrToLower(std::string s) {
     std::transform(s.begin(), s.end(), s.begin(), 
                    [](unsigned char c){ return std::tolower(c); }
                   );
     return s;
-}
-
-void GracefulQuit(int tmp){
-	std::cout << "You lost by resignation\n";
-	std::cout << "Quitting the game\n";
-
-	PROGRAM_ABORT_HANDLER = PROGRAM_STOP;
 }
 
 void PrintMessageAndExitGame(const std::string& mes){
@@ -62,6 +55,23 @@ void SendAndRecieve(message*    mes,
     mes->playertype = feefback->playertype;
     mes->opponentID = feefback->opponentID;
     zmq_msg_close(&request);
+}
+
+void GracefulQuit(int tmp){
+	std::cout << "Program forced stopped\n";
+
+    int tmp1, tmp2, tmp3;
+    int s_lose = NO;
+    while(s_lose != YES){
+        mes.action = EXIT_GAME_EARLY;
+        SendAndRecieve(&mes,
+                       tmp1,
+                       tmp2,
+                       tmp3,
+                       s_lose);
+    }
+    PrintMessageAndExitGame("You lost by resignation");
+    exit(0);
 }
 
 void ShowMenu(){
@@ -98,7 +108,7 @@ int GetMenuDecision(){
     return decision;
 }
 
-void* GetSocket(int         argc, 
+void* GetSocket(int         argc,
                 char*       argv[]){
     void* context = zmq_ctx_new();
 	if(context == NULL){
@@ -251,7 +261,7 @@ void ChooseAndVerifyOpponetsID(message*    mes,
         }
 
         mes->opponentID = std::stoi(string_player);
-        if(mes->opponentID != NO_OPPONENT){
+        if(mes->opponentID > 0){
             correct_input = true;
         }
     }
@@ -266,11 +276,134 @@ void CheckGameCondition(int s_win, int s_lose){
     }
 }
 
+void MakeMoveScenario(std::vector<char>& game_data, std::vector<int>& taken_array, std::vector<char>& global_win, std::vector<int>&  info_data, int& position, char what){
+    Colourize painter;
+    int s_move, s_status, s_win, s_lose;
+    int index = VerifyAndGetIndex_9(&mes,
+                                    s_move,
+                                    s_status,
+                                    s_win,
+                                    s_lose);
+
+    
+    int x = ProcessAndVerifyMove(game_data, position, index, what, taken_array);
+    bool isAbilityToChoose81 = false;
+    while(x != MOVE_VERIFIED){
+        if(x == MOVE_CHOOSE_9){
+            index = VerifyAndGetIndex_9(&mes,
+                                        s_move,
+                                        s_status,
+                                        s_win,
+                                        s_lose);
+        }
+        if(x == MOVE_CHOOSE_81){
+            bool legal_move = false;
+            isAbilityToChoose81 = true;
+            PrintInfo(info_data);
+            while(legal_move == false){
+                index = VerifyAndGetIndex_81(&mes,
+                                                s_move,
+                                                s_status,
+                                                s_win,
+                                                s_lose);
+                if(game_data[index] == '.'){
+                    position = GetPositionAtGlobalCell(game_data, index);
+                    legal_move = true;
+                }
+                else{
+                    std::cout << "This sell is taken too.\n";
+                }
+            }
+        }
+        if(isAbilityToChoose81 == true){
+            x = ProcessAndVerifyMove(game_data, position, GetPositionAtLocalCell(game_data, index), what, taken_array);
+        }
+        else{
+            x = ProcessAndVerifyMove(game_data, position, index, what, taken_array);
+        }
+    }
+
+    ++taken_array[position];
+
+    if(CheckLocalWin(game_data, position) == true){
+        MarkGlobalWin(global_win, position, what);
+        if(CheckGlobalWin(global_win) == true){
+            index = END_OF_GAME;
+            mes.action = PLAYER_WIN_GAME;
+            SendAndRecieve(&mes,
+                            s_move,
+                            s_status,
+                            s_win,
+                            s_lose);
+            PrintGame(game_data, global_win, painter);
+            PrintMessageAndExitGame("You won");
+        }
+    }
+
+    PrintGame(game_data, global_win, painter);
+    if(isAbilityToChoose81 == true){
+        position = GetPositionAtLocalCell(game_data, index);
+        mes.movement = index;
+    }
+    else{
+        position = index;
+        mes.movement = index;
+    }
+    mes.action = UPDATE_MOVE_ON_OPPONENTS_SIDE;
+    
+    SendAndRecieve(&mes,
+                    s_move,
+                    s_status,
+                    s_win,
+                    s_lose);
+
+    CheckGameCondition(s_win, s_lose);
+}
+
+void WaitForOpponentsMoveScenario(std::vector<char>& game_data, std::vector<int>& taken_array, std::vector<char>& global_win, int& position, char what){
+    Colourize painter;
+    int s_move, s_status, s_win, s_lose;
+    s_move = EMPTY_CELL;
+    while(s_move == EMPTY_CELL){
+        mes.action = CHECK_IF_OPPONENT_MAKE_MOVE;
+        SendAndRecieve(&mes,
+                        s_move,
+                        s_status,
+                        s_win,
+                        s_lose);
+
+    }
+    CheckGameCondition(s_win, s_lose);
+
+    int index = s_move;
+    if((index > 0) && (index < 10)){
+        ProcessAndVerifyMove(game_data, position, index, what, taken_array);
+    }
+    else{
+        game_data[index] = what;
+        position = GetPositionAtGlobalCell(game_data, index);
+        index = GetPositionAtLocalCell(game_data, index);
+    }
+
+    if(CheckLocalWin(game_data, position) == true){
+        MarkGlobalWin(global_win, position, what);
+        if(CheckGlobalWin(global_win) == true){
+            index = END_OF_GAME;
+            PrintGame(game_data, global_win, painter);
+            PrintMessageAndExitGame("You lost");
+        }
+    }
+
+    ++taken_array[position];
+    position = index;
+    PrintGame(game_data, global_win, painter);
+}
+
 int main(int        argc, 
          char*      argv[]){
 
 
-    void*   request             = GetSocket(argc, argv);    
+    void*   request             = GetSocket(argc, argv);
     int     decision            = GetMenuDecision();
 
     int     s_win               = NO;
@@ -278,11 +411,12 @@ int main(int        argc,
     int     s_status            = NO;
     int     s_move              = NO;
 
-    message mes;
     mes.id                      = std::stoi(argv[1]);
     mes.socket                  = request;
 
     Colourize painter;
+    signal(SIGTSTP, GracefulQuit); //ctr + Z
+    signal(SIGINT, GracefulQuit);  //ctr + c
     
     switch(decision){
         case 1:
@@ -355,7 +489,6 @@ int main(int        argc,
         PrintMessageAndExitGame("Sorry, this ID is in use now, choose another one");
     }
 
-
     if(decision == 1){
         ChooseAndVerifyOpponetsID(&mes,
                                   s_move,
@@ -363,7 +496,7 @@ int main(int        argc,
                                   s_win,
                                   s_lose);
 
-        //need to check it?
+        // TODO what if another player don't want to play???
         mes.status = STATUS_IN_GAME;
     }
     if(decision == 2){
@@ -383,10 +516,10 @@ int main(int        argc,
     NotifyAboutStart(mes.opponentID);
 
     int position;
-    std::vector<int> info_data(SizeV + 1);
+    std::vector<int>  info_data(SizeV + 1);
     std::vector<char> game_data(SizeV + 1, '.');
     std::vector<char> global_win(10, '.');
-    std::vector<int> taken_array(10, 0);
+    std::vector<int>  taken_array(10, 0);
     for(size_t i = 0; i < info_data.size(); ++i){
         info_data[i] = i;
     }
@@ -408,169 +541,33 @@ int main(int        argc,
 
         mes.action = UPDATE_MOVE_ON_OPPONENTS_SIDE;
         mes.movement = index;
-
         SendAndRecieve(&mes,
                        s_move,
                        s_status,
                        s_win,
                        s_lose);
-
         CheckGameCondition(s_win, s_lose);
+        position = GetPositionAtLocalCell(game_data, index);
+        PrintGame(game_data, global_win, painter);
 
         turn = 2;
-        PrintGame(game_data, global_win, painter);
-        position = GetPositionAtLocalCell(game_data, index);
-
         std::cout << "Opponent turn\n";
-
-        signal(SIGTSTP, GracefulQuit); //ctr + Z
-        signal(SIGINT, GracefulQuit); //ctr + c
-
-        if(PROGRAM_ABORT_HANDLER == PROGRAM_STOP){
-            s_lose = NO;
-            while(s_lose != YES){
-                mes.action = EXIT_GAME_EARLY;
-                SendAndRecieve(&mes,
-                               s_move,
-                               s_status,
-                               s_win,
-                               s_lose);
+        while(index != END_OF_GAME){
+            CheckGameCondition(s_win, s_lose);
+            if(turn == 1){
+                MakeMoveScenario(game_data, taken_array, global_win, info_data, position, 'x');
+                turn = 2;
+                std::cout << "Opponent turn\n";
             }
-            PrintMessageAndExitGame("You lost by resignation");
-        }
-
-        while(PROGRAM_ABORT_HANDLER != PROGRAM_STOP){
-
-            while(index != END_OF_GAME){
-
-                CheckGameCondition(s_win, s_lose);
-
-                if(turn == 1){
-
-                    index = VerifyAndGetIndex_9(&mes,
-                                                s_move,
-                                                s_status,
-                                                s_win,
-                                                s_lose);
-
-                    int x = -1;
-                    int escape = 1;
-                    while((x = ProcessAndVerifyMove(game_data, position, index, 'x', taken_array, escape)) != 0){
-
-                        if(x == 1){
-                            index = VerifyAndGetIndex_9(&mes,
-                                                        s_move,
-                                                        s_status,
-                                                        s_win,
-                                                        s_lose);
-                        }
-                        if(x == 2){
-                            bool legal_move = false; 
-                            while(legal_move == false){
-                                index = VerifyAndGetIndex_81(&mes,
-                                                             s_move,
-                                                             s_status,
-                                                             s_win,
-                                                             s_lose);
-                                if(game_data[index] == '.'){
-                                    game_data[index] = 'x';
-                                    position = GetPositionAtGlobalCell(game_data, index);
-                                    index = GetPositionAtLocalCell(game_data, index);
-                                    legal_move = true;
-                                }
-                                else{
-                                    std::cout << "This sell is taken too.\n";
-                                }
-                            }
-                        }
-                    }
-
-                    ++taken_array[position];
-
-                    if(CheckLocalWin( game_data, position) == true){
-                        MarkGlobalWin(global_win,position, 'x');
-
-                        if(CheckGlobalWin(global_win) == true){
-                            index = END_OF_GAME;
-                            PrintGame(game_data, global_win, painter);
-
-                            mes.action = PLAYER_WIN_GAME;
-                            SendAndRecieve(&mes,
-                                           s_move,
-                                           s_status,
-                                           s_win,
-                                           s_lose);
-                            PrintMessageAndExitGame("You won");
-                        }
-                    }
-
-                    position = index;
-                    PrintGame(game_data, global_win, painter);
-                    mes.action = UPDATE_MOVE_ON_OPPONENTS_SIDE;
-                    mes.movement = index;
-
-                    SendAndRecieve(&mes,
-                                   s_move,
-                                   s_status,
-                                   s_win,
-                                   s_lose);
-
-                    CheckGameCondition(s_win, s_lose);
-
-                    turn = 2;
-                    std::cout << "Opponent turn\n";
-                }
-                else {
-                    s_move = EMPTY_CELL;
-                    while(s_move == EMPTY_CELL){
-                        mes.action = CHECK_IF_OPPONENT_MAKE_MOVE;
-                        SendAndRecieve(&mes,
-                                       s_move,
-                                       s_status,
-                                       s_win,
-                                       s_lose);
-
-                    }
-                    CheckGameCondition(s_win, s_lose);
-
-                    std::cout << "\n";
-                    index = s_move;
-                    int escape = 1;
-                    if((index > 0) && (index < 10)){
-                        ProcessAndVerifyMove(game_data, position, index, '0', taken_array, escape);
-                    }
-                    else{
-                        game_data[index] = '0';
-                        position = GetPositionAtGlobalCell(game_data, index);
-                        index = GetPositionAtLocalCell(game_data, index);
-                        escape = 0;
-                    }
-
-                    ++taken_array[position];
-
-                    if(CheckLocalWin( game_data , position ) == true){
-                        MarkGlobalWin(global_win, position, '0');
-                        if(CheckGlobalWin(global_win) == true){
-                            index = END_OF_GAME;
-                            PrintGame(game_data, global_win, painter);
-                            PrintMessageAndExitGame("You lost");
-                            // ??
-                            break;
-                        }
-                    }
-
-                    position = index;
-                    turn = 1;
-                    PrintGame(game_data, global_win, painter);
-                    std::cout << "Enter index [1 ... 9] \n";
-                }
+            else {
+                WaitForOpponentsMoveScenario(game_data, taken_array, global_win, position, '0');
+                turn = 1;
+                std::cout << "Enter index [1 ... 9] \n";
             }
         }
     }
     if(mes.playertype == 2){
-        int index = -1;
         std::cout << "Opponent turn\n";
-
         s_move = EMPTY_CELL;
         while(s_move == EMPTY_CELL){
             mes.action = CHECK_IF_OPPONENT_MAKE_MOVE;
@@ -580,163 +577,28 @@ int main(int        argc,
                            s_win,
                            s_lose);
         }
-
         CheckGameCondition(s_win, s_lose);
 
-        std::cout << "\n";
-        index = s_move;
+        int index = s_move;
         game_data[index] = 'x';
+        position = GetPositionAtLocalCell(game_data, index);
         ++taken_array[GetPositionAtGlobalCell(game_data, index)];
+        PrintGame(game_data, global_win, painter);
 
         turn = 2;
-        PrintGame(game_data, global_win, painter);
-        position = GetPositionAtLocalCell(game_data, index);
-
         std::cout << "Enter index [1 ... 9] \n"; 
-
-        signal(SIGTSTP, GracefulQuit);//ctr + Z
-        signal(SIGINT, GracefulQuit);//ctr + c
-
-        if(PROGRAM_ABORT_HANDLER == PROGRAM_STOP){
-            s_lose = NO;
-            while(s_lose != YES){
-                mes.action = EXIT_GAME_EARLY;
-                SendAndRecieve(&mes,
-                               s_move,
-                               s_status,
-                               s_win,
-                               s_lose);
-                
+        while(index != END_OF_GAME){
+            CheckGameCondition(s_win, s_lose);
+            if(turn == 1){
+                WaitForOpponentsMoveScenario(game_data, taken_array, global_win, position, 'x');
+                turn = 2;
+                std::cout << "Enter index [1 ... 9] \n";
             }
-            PrintMessageAndExitGame("You lost by resignation");
-        }
-
-        while(PROGRAM_ABORT_HANDLER != PROGRAM_STOP){
-
-            while(index != END_OF_GAME){
-
-                CheckGameCondition(s_win, s_lose);
-
-                if(turn == 1){
-                    s_move = EMPTY_CELL;
-                    while(s_move == EMPTY_CELL){
-                        mes.action = CHECK_IF_OPPONENT_MAKE_MOVE;
-                        SendAndRecieve(&mes,
-                                       s_move,
-                                       s_status,
-                                       s_win,
-                                       s_lose);
-                    }
-                    CheckGameCondition(s_win, s_lose);
-
-                    std::cout << "\n";
-                    index = s_move;
-                    int escape = 1;
-                    if((index > 0) && (index < 10)){
-                        ProcessAndVerifyMove(game_data, position, index, 'x', taken_array, escape);
-                    }
-                    else{
-                        game_data[index] = 'x';
-                        position = GetPositionAtGlobalCell(game_data, index);
-                        index = GetPositionAtLocalCell(game_data, index);
-                        escape = 0;
-                    }
-
-                    ++taken_array[position];
-                    if(CheckLocalWin(game_data, position) == true){
-                        MarkGlobalWin(global_win,position, 'x');
-                        if (CheckGlobalWin(global_win) == true){
-                            index = END_OF_GAME;
-                            PrintGame(game_data, global_win, painter);
-                            PrintMessageAndExitGame("You lost");
-                        }
-                    }
-
-                    position = index;
-                    turn = 2;
-                    PrintGame(game_data, global_win, painter);
-                    std::cout << "Enter index [1 ... 9] \n";
-                }
-                else {
-                    index = VerifyAndGetIndex_9(&mes,
-                                                s_move,
-                                                s_status,
-                                                s_win,
-                                                s_lose);
-
-                    int x = -1;
-                    int escape = 1;
-                    while((x = ProcessAndVerifyMove(game_data, position, index, '0', taken_array, escape)) != 0){
-                        if(x == 1){
-                            index = VerifyAndGetIndex_9(&mes,
-                                                        s_move,
-                                                        s_status,
-                                                        s_win,
-                                                        s_lose);
-                        }
-                        if(x == 2){
-                            int legal_move = false; 
-                            PrintInfo(info_data);
-                            while(legal_move == false){
-                                index = VerifyAndGetIndex_81(&mes,
-                                                             s_move,
-                                                             s_status,
-                                                             s_win,
-                                                             s_lose);
-                                if(game_data[index] == '.'){
-                                    game_data[index] = '0';
-                                    position = GetPositionAtGlobalCell(game_data, index);
-                                    index = GetPositionAtLocalCell(game_data, index);
-                                    legal_move = true;
-                                    escape = 0;
-                                }
-                                else{
-                                    std::cout << "This sell is taken too.\n";
-                                }
-                            }
-                        }
-                    }
-
-                    ++taken_array[position];
-
-                    if(CheckLocalWin(game_data, position) == true){
-                        MarkGlobalWin(global_win, position, '0');
-                        if(CheckGlobalWin(global_win) == true){
-                            index = END_OF_GAME;
-                            PrintGame(game_data, global_win, painter);
-                            std::cout << "You won \n";
-                            std::cout << "Quitting the game\n";
-
-                            mes.action = PLAYER_WIN_GAME;
-                            
-                            
-                            SendAndRecieve(&mes,
-                                           s_move,
-                                           s_status,
-                                           s_win,
-                                           s_lose);
-                            exit(0);
-                        }
-                    }
-
-                    position = index;
-                    PrintGame(game_data, global_win, painter);
-                    mes.action = UPDATE_MOVE_ON_OPPONENTS_SIDE;
-                    mes.movement = index;
-                    
-                    SendAndRecieve(&mes,
-                                   s_move,
-                                   s_status,
-                                   s_win,
-                                   s_lose);
-
-                    CheckGameCondition(s_win, s_lose);
-
-                    turn = 1;
-                    std::cout << "Opponent turn\n";
-                }
+            else {
+                MakeMoveScenario(game_data, taken_array, global_win, info_data, position, '0');
+                turn = 1;
+                std::cout << "Opponent turn\n";
             }
-        
         }
     }
 

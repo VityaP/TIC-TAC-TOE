@@ -1,5 +1,5 @@
 /*
-This program is the private property of Victor Petrosyan. 
+This program is the private property of Victor Petrosyan.
 Any use without the consent of the author is prohibited.
 */
 
@@ -11,7 +11,7 @@ struct message{
     int     movement;
     int     opponentID;
     int     status;
-    int     lose;   //0 manual //1 if lose
+    int     lose;
     int     win;
     int     winstat;
     int     losestat;
@@ -52,5 +52,10 @@ struct message{
 #define END_OF_GAME                        100
 
 #define NO_OPPONENT                         -1
+#define INCORRECT_INDEX                     -2
+
+#define MOVE_VERIFIED                        0
+#define MOVE_CHOOSE_9                        1
+#define MOVE_CHOOSE_81                       2
 
 #endif

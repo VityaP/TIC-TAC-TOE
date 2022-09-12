@@ -1,5 +1,5 @@
 /*
-This program is the private property of Victor Petrosyan. 
+This program is the private property of Victor Petrosyan.
 Any use without the consent of the author is prohibited.
 */
 
@@ -76,7 +76,7 @@ extern int GetPositionAtLocalCell(const std::vector<char>& Array, int index);
 
 extern int GetPositionAtGlobalCell(const std::vector<char>& Array, int index);
 
-extern int ProcessAndVerifyMove(std::vector<char>& Array, int lastindex, int userindex, char what, const std::vector<int>& taken, int escape);
+extern int ProcessAndVerifyMove(std::vector<char>& Array, int lastindex, int userindex, char what, const std::vector<int>& taken);
 
 static int CheckLocal(const std::vector<char>& Array, int lastindex, int userindex);
 

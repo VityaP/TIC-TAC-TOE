@@ -1,5 +1,5 @@
 /*
-This program is the private property of Victor Petrosyan. 
+This program is the private property of Victor Petrosyan.
 Any use without the consent of the author is prohibited.
 */
 
@@ -11,6 +11,7 @@ bool Find(const std::map<int, Player>& players, int id){
 
 void PrintDatabase(std::map<int, Player>& players){
     std::cout << "|" << std::setw(15) << "PLAYER_ID"
+              << "|" << std::setw(10) << "LAST_MOVE"
               << "|" << std::setw(10) << "TYPE"
               << "|" << std::setw(15) << "OPPONENT_ID"
               << "|" << std::setw(40) << "STATUS"
@@ -19,10 +20,11 @@ void PrintDatabase(std::map<int, Player>& players){
         auto id = tmp.first;
         auto player = tmp.second;
         std::cout << "|" << std::setw(15) << player.id
+                  << "|" << std::setw(10) << player.last_move
                   << "|" << std::setw(10) << player.type
                   << "|" << std::setw(15) << player.id_opponent 
                   << "|" << std::setw(40) << player.status
-                  << "|\n";
+                  << "|\n\n";
     }
 }
 
@@ -71,7 +73,7 @@ int GetStatus(std::map<int, Player>& players, int id){
     if(Find(players, id) == true){
         return players[id].status;
     }
-    return -1;
+    return STATUS_PLAYER_DELETED;
 }
 
 bool EnteringAtServer(std::map<int, Player>& players, int id, int type, int status){
@@ -139,11 +141,11 @@ void PrintGame(const std::vector<char>& Array, const std::vector<char>& global_w
                         ++idx;
                     }
                     if(global_win[idx] == 'x'){
-                        std::cout << painter.paint("RED", " . ");
+                        std::cout << painter.paint("RED", " * ");
                         continue;
                     }
                     if(global_win[idx] == '0'){
-                        std::cout << painter.paint("BLUE", " . ");
+                        std::cout << painter.paint("BLUE", " * ");
                         continue;
                     }
                     std::cout << painter.paint("ENDC", " . ");
@@ -168,7 +170,7 @@ int GetPositionAtLocalCell(const std::vector<char>& Array, int index){
             }
         }
     }
-    return -2;
+    return INCORRECT_INDEX;
 }
 
 int GetPositionAtGlobalCell(const std::vector<char>& Array, int index){
@@ -183,30 +185,27 @@ int GetPositionAtGlobalCell(const std::vector<char>& Array, int index){
             }
         }
     }
-    return -2;
+    return INCORRECT_INDEX;
 }
 
-int ProcessAndVerifyMove(std::vector<char>& Array, int lastindex, int userindex, char what, const std::vector<int>& taken, int escape){
+int ProcessAndVerifyMove(std::vector<char>& Array, int lastindex, int userindex, char what, const std::vector<int>& taken){
     int n = 27 * ((lastindex - 1) / 3);
     int k = 9 * ((lastindex - 1) % 3);
 
     if(Array[userindex + k + n] == '.'){
-        Array[userindex+k+n] = what;
-        return 0;
+        Array[userindex + k + n] = what;
+        return MOVE_VERIFIED;
     }
     else{
         if(taken[lastindex] == 9){
             std::cout << "There are no free cells in the block. \n";
             std::cout << "Select any other index [1 ... 81] which is free\n";
-            return 2;
-        }
-        if(escape != 0){
-            std::cout << "This cell is taken. Choose another cell \n";
-            std::cout << "Enter index [1 ... 9] \n";
-            return 1;
+            return MOVE_CHOOSE_81;
         }
         else{
-            return 0;
+            std::cout << "This cell is taken. Choose another cell \n";
+            std::cout << "Enter index [1 ... 9] \n";
+            return MOVE_CHOOSE_9;
         }
     }
 }
